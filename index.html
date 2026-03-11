@@ -757,8 +757,8 @@
 // Topic IDs here are independent of IL_TOPIC_REGISTRY — the same integer
 // may refer to completely different subjects in each registry.
 const TOPIC_REGISTRY = {
-  1: { label: 'Antibiotic Resistance', enabled: true  },
-  // 2: { label: 'Viral Immunology',      enabled: true  },
+  1: { label: 'Pilot_Antibiotic Resistance', enabled: false  },
+  2: { label: 'Disease Ecology',      enabled: true  },
   // 3: { label: 'Vaccine Science',        enabled: true  },
 };
 
@@ -823,6 +823,36 @@ const QUESTION_BANK = [
     choices: ["It makes meat taste different", "Resistance genes can transfer to human pathogens", "It reduces milk production", "It has no known effect on humans"],
     correct: 1
   }
+    {
+    topic: 2,
+    q: "What best describes the dilution effect in disease ecology?",
+    choices: ["Higher biodiversity increases disease transmission because more hosts are available for pathogens.", "Higher biodiversity reduces disease transmission because many species are poor hosts that dilute pathogen spread.", "Disease transmission remains constant regardless of biodiversity levels.", "Higher biodiversity eliminates pathogens entirely from an ecosystem."],
+    correct: 1
+  },
+  {
+    topic: 2,
+    q: "Which of the following best describes an emerging infectious disease?",
+    choices: ["A disease that has been present in a population for centuries with stable transmission rates.", "A disease that affects wildlife but can also cause disease in humans.", "A disease that has recently increased in incidence, geographic range, or host population.", "A disease that has been completely eradicated through vaccination."],
+    correct: 2
+  },
+  {
+    topic: 2,
+    q: "How can climate change influence the transmission of vector-borne diseases?",
+    choices: ["It can expand vector ranges in cooler and northern regions, increasing disease risk there.", "It can contract vector ranges at hot and arid margins, reducing disease risk there.", "It completely eliminates vectors in warmer climates.", "Both A and B are correct."],
+    correct: 3
+  },
+  {
+    topic: 2,
+    q: "Why is co-infection status often a better predictor of infection risk than body condition or season?",
+    choices: ["Because pathogens never interact with each other inside the same host.", "Because the presence of one pathogen can alter host immunity, making infection by other pathogens more or less likely.", "Because body condition and season have no effect on disease dynamics.", "Because co-infections only occur in unhealthy hosts."],
+    correct: 1
+  },
+  {
+    topic: 2,
+    q: "In the life cycle of the sheep tick (Ixodes ricinus), which stage is most responsible for transmitting Borrelia burgdorferi (the cause of Lyme disease) to humans?",
+    choices: ["Adult stage (both males and females)", "Larval stage", "Nymph stage", "Adult female stage only"],
+    correct: 2
+  },
 ];
 
 // ╔═══════════════════════════════════════════════════════════════╗
