@@ -757,8 +757,8 @@
 // Topic IDs here are independent of IL_TOPIC_REGISTRY — the same integer
 // may refer to completely different subjects in each registry.
 const TOPIC_REGISTRY = {
-  1: { label: 'Pilot_Antibiotic Resistance', enabled: false  },
-  2: { label: 'Disease Ecology',      enabled: true  },
+  1: { label: 'Disease Ecology',          enabled: false },
+  2: { label: 'Wildlife Disease Ecology', enabled: true  },
   // 3: { label: 'Vaccine Science',        enabled: true  },
 };
 
@@ -822,8 +822,8 @@ const QUESTION_BANK = [
     q: "Overuse of antibiotics in livestock is a concern because:",
     choices: ["It makes meat taste different", "Resistance genes can transfer to human pathogens", "It reduces milk production", "It has no known effect on humans"],
     correct: 1
-  }
-    {
+  },
+  {
     topic: 2,
     q: "What best describes the dilution effect in disease ecology?",
     choices: ["Higher biodiversity increases disease transmission because more hosts are available for pathogens.", "Higher biodiversity reduces disease transmission because many species are poor hosts that dilute pathogen spread.", "Disease transmission remains constant regardless of biodiversity levels.", "Higher biodiversity eliminates pathogens entirely from an ecosystem."],
@@ -852,7 +852,7 @@ const QUESTION_BANK = [
     q: "In the life cycle of the sheep tick (Ixodes ricinus), which stage is most responsible for transmitting Borrelia burgdorferi (the cause of Lyme disease) to humans?",
     choices: ["Adult stage (both males and females)", "Larval stage", "Nymph stage", "Adult female stage only"],
     correct: 2
-  },
+  }
 ];
 
 // ╔═══════════════════════════════════════════════════════════════╗
@@ -5720,8 +5720,17 @@ function buildDeepSimXLSX(species, filename){
   // Write workbook to ArrayBuffer, then inject charts via JSZip
   const wbArray = XLSX.write(wb, {type:'array', bookType:'xlsx'});
 
-  injectChartsIntoXLSX(wbArray, species, filename);
-  console.log(`[Immuno-Man] Deep sim XLSX exported — ${species.length} species + Algorithm tab + charts.`);
+  injectChartsIntoXLSX(wbArray, species, filename).catch(err => {
+    console.warn('[Immuno-Man] Chart injection failed, falling back to plain XLSX:', err);
+    const blob = new Blob([wbArray], {type:'application/octet-stream'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href=url; a.download=filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),100);
+  });
+  console.log(`[Immuno-Man] Deep sim XLSX export started — ${species.length} species + Algorithm tab + charts.`);
 }
 
 // ─── Chart XML injection (browser-side, no Python needed) ────
@@ -5807,25 +5816,8 @@ async function injectChartsIntoXLSX(wbArray, species, filename){
       `Target="${drawingPath}" Id="rId1"/></Relationships>`;
   }
 
-  // Find actual sheet index numbers by reading workbook.xml
-  const wbXml = await zip.file('xl/workbook.xml').async('string');
-  const sheetMatches = [...wbXml.matchAll(/sheetId="(\d+)"[^>]*name="([^"]+)"/g)];
-  // Build sheetName → file index map from workbook rels
-  const wbRelsXml = await zip.file('xl/_rels/workbook.xml.rels').async('string');
-  const relMatches = [...wbRelsXml.matchAll(/Id="rId(\d+)"[^>]*Target="[^"]*sheet(\d+)\.xml"/g)];
-  const rIdToSheet = {};
-  relMatches.forEach(m => { rIdToSheet[m[1]] = parseInt(m[2]); });
-
-  // Map species sheet names to their sheet file numbers
-  const nameToSheetNum = {};
-  sheetMatches.forEach(m => {
-    const sheetId = m[1];
-    // Find rId for this sheet
-    const rIdMatch = wbRelsXml.match(new RegExp(`Id="rId(\\d+)"[^>]*>\\s*</|rId(\\d+)"[^/]*/xl/worksheets/sheet${sheetId}\\.xml`));
-    // Simpler: match by position — sheetMatches[i] corresponds to rId(i+1)
-  });
-  // Actually just use positional ordering — sheet1=Algorithm, sheet2=species[0], etc.
-  // SheetJS assigns sheets in append order.
+  // Sheet ordering: SheetJS appends in order — sheet1=Algorithm, sheet2+=species.
+  // No need to parse workbook.xml; positional assumption is safe here.
 
   let contentTypesXml = await zip.file('[Content_Types].xml').async('string');
 
@@ -5856,11 +5848,17 @@ async function injectChartsIntoXLSX(wbArray, species, filename){
       zip.file(sheetRels, sheetRelsXML(`/xl/drawings/drawing${chartNum}.xml`));
     }
 
-    // Register in worksheet XML — add <drawing> element before </worksheet>
+    // Register drawing in worksheet XML.
+    // SheetJS worksheets declare xmlns:r on the root element already.
+    // Insert <drawing> before </worksheet>.
     const wsPath = `xl/worksheets/sheet${sheetNum}.xml`;
-    let wsXml = await zip.file(wsPath).async('string');
+    const wsFile = zip.file(wsPath); if(!wsFile){ console.warn('[Immuno-Man] Chart inject: sheet not found:', wsPath); continue; }
+    let wsXml = await wsFile.async('string');
     if(!wsXml.includes('<drawing')){
-      wsXml = wsXml.replace('</worksheet>', `<drawing r:id="rId1" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/></worksheet>`);
+      if(!wsXml.includes('xmlns:r=')){
+        wsXml = wsXml.replace('<worksheet ', '<worksheet xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" ');
+      }
+      wsXml = wsXml.replace('</worksheet>', '<drawing r:id="rId1"/></worksheet>');
       zip.file(wsPath, wsXml);
     }
 
