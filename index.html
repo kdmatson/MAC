@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#030810">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <title>Immuno-Man 🦠</title>
@@ -15,7 +18,7 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:#030810; color:#a0f0c0; font-family:'Exo 2',sans-serif;
     display:flex; flex-direction:column; align-items:center;
-    width:100vw; height:100vh; overflow:hidden; gap:0; margin:0; padding:0; }
+    width:100vw; height:100vh; height:-webkit-fill-available; overflow:hidden; gap:0; margin:0; padding:0; }
   h1 { font-family:'Orbitron',monospace; font-size:1.8rem; font-weight:900; letter-spacing:4px;
     color:#40ffaa; text-shadow:0 0 20px #40ffaa; margin:0; }
   .tag { font-size:.95rem; color:#4a9970; letter-spacing:1px; margin-bottom:8px;
@@ -23,12 +26,14 @@
   .hud { position:relative; display:flex; justify-content:center; align-items:flex-end; margin-bottom:6px; width:504px; }
   .stat { text-align:center; }
   .slabel { font-family:'Orbitron',monospace; font-size:.55rem; letter-spacing:2px; color:#2a5540; text-transform:uppercase; }
-  .sval { font-family:'Orbitron',monospace; font-size:1.1rem; font-weight:700; color:#ffdd44; }
+  .sval { font-family:'Orbitron',monospace; font-size:1.1rem; font-weight:700; color:#ffdd44;
+    display:inline-block; text-align:right; font-variant-numeric:tabular-nums;
+    min-width:3.6ch; /* wide enough for 6-digit scores at this font size */ }
   .lives { display:flex; gap:5px; justify-content:center; height:1.45rem; align-items:center; }
   #game-canvas { display:block; border:1px solid rgba(64,255,170,.2); border-radius:4px; box-shadow:0 0 40px rgba(64,255,170,.08); }
   #wrap { position:relative; display:inline-block; }
   #ov { position:absolute; inset:0; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:4px;
+    align-items:center; justify-content:center; gap:10px;
     background:rgba(3,8,16,.93); border-radius:4px;
     -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); z-index:2; }
   #ov h2 { font-family:'Orbitron',monospace; font-size:1.6rem; color:#40ffaa;
@@ -97,7 +102,7 @@
     width:38px; line-height:1.3; text-align:center; padding:2px 0; display:none; }
   #pause-btn { font-family:'Orbitron',monospace; font-size:.5rem; letter-spacing:1px; color:#4a9fcf;
     width:38px; line-height:1.3; text-align:center; padding:2px 0; display:none; }
-  .hint { font-size:.72rem; color:#1e3828; letter-spacing:1px; margin-top:1px; margin-bottom:0; }
+  .hint { font-size:.72rem; color:#1e3828; letter-spacing:1px; margin-top:0; margin-bottom:0; }
   #game-root { display:flex; flex-direction:column; align-items:center; transform-origin:top center; flex-shrink:0; }
   .title-row { display:flex; align-items:center; gap:10px; margin-bottom:4px; margin-top:6px; }
   canvas.ui { border:none !important; box-shadow:none !important; background:transparent !important; display:inline-block; }
@@ -111,6 +116,12 @@
     border-radius:4px; width:36px; height:40px; display:flex; align-items:center; justify-content:center;
     cursor:pointer; transition:all .15s; }
   .letter-box.active { border-color:#40ffaa; background:rgba(64,255,170,.18); box-shadow:0 0 12px rgba(64,255,170,.4); }
+  .letter-col { display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .letter-btn-ud { font-family:'Orbitron',monospace; font-size:.65rem; color:#40ffaa;
+    background:transparent; border:1px solid rgba(64,255,170,.25); border-radius:3px;
+    width:36px; height:22px; cursor:pointer; transition:all .15s; line-height:1;
+    display:flex; align-items:center; justify-content:center; }
+  .letter-btn-ud:active { background:rgba(64,255,170,.2); border-color:#40ffaa; }
 
   /* ── QUIZ MODAL ───────────────────────────────────────────── */
   #quiz-modal {
@@ -199,6 +210,11 @@
   #pause-main { display:flex; flex-direction:column; align-items:center; gap:16px; }
   #pause-main.hidden { display:none; }
   .quit-confirm-btns { display:flex; gap:14px; }
+
+  /* ── SHARED END-SCREEN COMPONENTS ───────────────────────────── */
+  .end-submit-area { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:108px; }
+  .end-btns { display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .end-score-recorded { font-size:.7rem; color:#2a5540; letter-spacing:2px; font-family:'Orbitron',monospace; }
 
   /* ── QUIZ-ONLY RESULTS ───────────────────────────────────────── */
   #quiz-only-results {
@@ -460,12 +476,12 @@
 <p class="tag">Get your pseudopodia ready!<br>And make a run for your life!</p>
 <div class="hud">
   <div style="display:flex;gap:28px;align-items:flex-end;">
-    <div class="stat"><div class="slabel" style="color:#a08820;">Game</div><div class="sval" id="sc" style="color:#ffdd44;">0</div></div>
-    <div class="stat"><div class="slabel" style="color:#1a6644;">Quiz</div><div class="sval" id="qs" style="color:#40ffaa;">0</div></div>
-    <div class="stat"><div class="slabel" style="color:#7a1020;">Level</div><div class="sval" id="lv" style="color:#ff4466;">1</div></div>
+    <div class="stat"><div class="slabel" style="color:#a08820;">Game</div><div class="sval" id="sc" style="color:#ffdd44;min-width:4.2ch;">0</div></div>
+    <div class="stat"><div class="slabel" style="color:#1a6644;">Quiz</div><div class="sval" id="qs" style="color:#40ffaa;min-width:3.0ch;">0</div></div>
+    <div class="stat"><div class="slabel" style="color:#7a1020;">Level</div><div class="sval" id="lv" style="color:#ff4466;min-width:1.8ch;">1</div></div>
     <div class="stat"><div class="slabel" style="color:#7a1020;">Lives</div><div class="lives" id="li"></div></div>
     <div class="stat"><div class="slabel" style="color:#4488aa;">Rx</div><div class="lives" id="pill-counter"></div></div>
-    <div class="stat"><div class="slabel" style="color:#888888;">Best Combi</div><div class="sval" id="bs" style="color:#ffffff;">0</div></div>
+    <div class="stat"><div class="slabel" style="color:#888888;">Best Combi</div><div class="sval" id="bs" style="color:#ffffff;min-width:4.2ch;">0</div></div>
   </div>
   <button id="quiz-toggle-btn" class="hud-icon-btn" onclick="toggleQuiz()" title="Cycle quiz mode (start screen only)" style="position:absolute;right:2px;bottom:36px;">QUIZ<br>ON</button>
 </div>
@@ -517,7 +533,7 @@
   <div id="ov">
     <canvas id="icon-canvas" class="ui" width="130" height="130"></canvas>
     <h2>IMMUNO-MAN</h2>
-    <p style="margin-bottom:18px;border-left:2px solid rgba(64,255,170,0.35);padding-left:10px;">You are a macrophage.<br>
+    <p style="border-left:2px solid rgba(64,255,170,0.35);padding-left:10px;">You are a macrophage.<br>
        Devour all microbes to advance.<br>
        Viruses hunt you — grab antibodies to fight back.<br>
        Microbes reproduce — clear them before they spread.<br>
@@ -676,18 +692,26 @@
 // ║                                                   before submit only  ║
 // ║   Enter          Submit quiz (quiz-only mode)     quiz-only results   ║
 // ║                                                   screen              ║
-// ║   Shift+I        Cycle interlude previews         idle or over only   ║
-// ║   Shift+R        Download session CSV report      any state except    ║
-// ║                                                   idle; silent if no  ║
-// ║                                                   levels logged yet   ║
-// ║   Shift+Q        Export question bank as CSV      any state           ║
-// ║   Shift+S        Export species bank as CSV       any state           ║
-// ║   Shift+L        Export interlude bank as JSON    any state           ║
-// ║   Shift+H        HQ simulation overlay (toggle)   any state           ║
-// ║                  50 runs × 15 levels per species; CSV+XLSX inside     ║
-// ║   Shift+Y        Deep HQ simulation picker        any state           ║
-// ║                  5 individuals × 15 levels;       checkbox selection; ║
-// ║                  seeded PRNG — reproducible;      CSV / XLSX / PY     ║
+// ║   Shift+I        Preview interlude cutscenes      idle only           ║
+// ║                  one by one                                           ║
+// ║   Shift+R        Download session data report     idle + over only    ║
+// ║                  (levels, AMR stats, deaths)      (data lost on new   ║
+// ║                                                    game start)        ║
+// ║   Shift+Q        Export question bank overlay     idle only           ║
+// ║                  ↓ CSV (round-trip for Shift+U)                       ║
+// ║                  ↓ HTML snippet (full TOPIC_REGISTRY +                ║
+// ║                    QUESTION_BANK, paste into HTML file)               ║
+// ║   Shift+S        Export host species bank as CSV  idle only           ║
+// ║   Shift+L        Export interlude bank as JSON    idle only           ║
+// ║   Shift+U        Question bank CSV overlay        idle only           ║
+// ║                  CONVERT: CSV → paste-ready HTML  CSV only, or        ║
+// ║                  snippet (no session change)       CSV + hardcoded     ║
+// ║                  LOAD FOR TESTING: inject CSV     merge or replace;   ║
+// ║                  into live session only            resets on refresh   ║
+// ║   Shift+H        HQ simulation — Monte Carlo      idle only           ║
+// ║                  runs across all species;         CSV + XLSX export   ║
+// ║   Shift+Y        Deep HQ simulation — seeded      idle only           ║
+// ║                  individuals × 15 levels;         CSV / XLSX / PY     ║
 // ║                                                                        ║
 // ║   Browser refresh guard (not a shortcut):                             ║
 // ║   beforeunload   Warn on Ctrl+R / tab close       armed in init(),    ║
@@ -706,11 +730,12 @@
 // ║   Enter (quiz-only submit) — quizOnlyOnKey listener ~line 2050        ║
 // ║   Shift+I    — keydown listener near showInterludes()                  ║
 // ║   Shift+R    — keydown listener near downloadSessionCSV()              ║
-// ║   Shift+Q    — keydown listener near downloadQuestionBankCSV()         ║
+// ║   Shift+Q    — keydown listener near showExportOverlay()               ║
 // ║   Shift+S    — keydown listener near downloadSpeciesBankCSV()          ║
 // ║   Shift+L    — keydown listener near downloadInterludeBankJSON()       ║
 // ║   Shift+H    — keydown listener near showHQSimOverlay()                ║
 // ║   Shift+Y    — keydown listener near showDeepSimPicker()               ║
+// ║   Shift+U    — keydown listener near showUploadOverlay()               ║
 // ║                                                                        ║
 // ╚══════════════════════════════════════════════════════════════════════╝
 
@@ -757,7 +782,7 @@
 // Topic IDs here are independent of IL_TOPIC_REGISTRY — the same integer
 // may refer to completely different subjects in each registry.
 const TOPIC_REGISTRY = {
-  1: { label: 'Antibiotic Resistance', enabled: false },
+  1: { label: 'Antibiotic Resistance', enabled: true  },
   2: { label: 'Disease Ecology',       enabled: true  },
   // 3: { label: 'Vaccine Science',     enabled: true  },
 };
@@ -1947,6 +1972,7 @@ function quizDismiss() {
 // Note: DOMContentLoaded has already fired by the time inline scripts run,
 // so we wire the listener directly instead of waiting for the event.
 document.getElementById('quiz-play-btn').addEventListener('click', () => {
+  initAudio(); // iOS: keep AudioContext alive through gesture chain
   quizDismiss();
   const cb = quizOnConfirm;
   quizOnConfirm = null;
@@ -2049,16 +2075,19 @@ function showQuizOnlyResults(){
       </div>
     </div>
     <div class="qo-progress">GAME SCORE: 0 (QUIZ ONLY MODE)</div>
-    <div id="qo-submit-area" style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:8px;">
-      <p style="font-size:.75rem;color:#2a5040;margin:0;">Enter your initials:</p>
-      <div class="name-entry" id="qo-name-entry">
-        <div class="letter-box active" id="qolb0">A</div>
-        <div class="letter-box" id="qolb1">A</div>
-        <div class="letter-box" id="qolb2">A</div>
+    <div id="qo-submit-area" class="end-submit-area">
+      <div id="qo-submit-before" style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <p style="font-size:.75rem;color:#2a5040;margin:0;">Enter your initials:</p>
+        <div class="name-entry" id="qo-name-entry">
+          <div class="letter-col"><button class="letter-btn-ud" id="qoup0">▲</button><div class="letter-box active" id="qolb0">A</div><button class="letter-btn-ud" id="qodn0">▼</button></div>
+          <div class="letter-col"><button class="letter-btn-ud" id="qoup1">▲</button><div class="letter-box" id="qolb1">A</div><button class="letter-btn-ud" id="qodn1">▼</button></div>
+          <div class="letter-col"><button class="letter-btn-ud" id="qoup2">▲</button><div class="letter-box" id="qolb2">A</div><button class="letter-btn-ud" id="qodn2">▼</button></div>
+        </div>
+        <button id="qo-submit-score" class="btn-gold">SUBMIT SCORE</button>
       </div>
-      <button id="qo-submit-score" class="btn-gold">SUBMIT SCORE</button>
+      <div id="qo-submit-after" style="display:none;" class="end-score-recorded">SCORE RECORDED</div>
     </div>
-    <div style="display:flex;gap:12px;margin-top:8px;">
+    <div class="end-btns">
       <button id="qo-play-again">QUIZ AGAIN</button>
       <button id="qo-main-menu" class="btn-secondary">MAIN MENU</button>
     </div>
@@ -2100,13 +2129,17 @@ function showQuizOnlyResults(){
     refreshBest();
     buildHsWidget();
     requestAnimationFrame(()=>repositionHsPanel());
-    const sa = document.getElementById('qo-submit-area');
-    if(sa) sa.innerHTML = '<p style="font-size:.7rem;color:#2a5540;margin:0;letter-spacing:2px;font-family:Orbitron,monospace;">SCORE RECORDED</p>';
+    const before = document.getElementById('qo-submit-before');
+    const after  = document.getElementById('qo-submit-after');
+    if(before) before.style.display='none';
+    if(after)  after.style.display='block';
   }
 
-  // Letter box clicks
+  // Letter box clicks — move cursor; up/down buttons cycle letter
   for(let i=0;i<3;i++){
     document.getElementById('qolb'+i).addEventListener('click', ()=>{ cursor=i; renderQO(); });
+    document.getElementById('qoup'+i).addEventListener('click', ()=>{ cursor=i; letters[i]=cycleChar(letters[i],1); renderQO(); });
+    document.getElementById('qodn'+i).addEventListener('click', ()=>{ cursor=i; letters[i]=cycleChar(letters[i],-1); renderQO(); });
   }
 
   document.getElementById('qo-submit-score').addEventListener('click', submitQO, {once:true});
@@ -2975,6 +3008,10 @@ document.addEventListener('keyup',e=>{ K[e.key]=false; });
 
 // ─── Touch / Swipe controls (mobile & iPad) ──────────────────
 let _touchStartX=0, _touchStartY=0;
+// iOS belt-and-braces: attempt AudioContext resume on the very first touch,
+// before the user reaches any button. Safe to call repeatedly — initAudio()
+// is guarded and AC.resume() is a no-op if already running.
+document.addEventListener('touchstart', ()=>{ if(AC) AC.resume(); }, {passive:true, once:true});
 document.addEventListener('touchstart',e=>{ _touchStartX=e.touches[0].clientX; _touchStartY=e.touches[0].clientY; },{passive:true});
 document.addEventListener('touchend',e=>{
   if(state!=='playing') return;
@@ -3569,7 +3606,7 @@ function returnToStart(){
   ov.innerHTML=`
     <canvas id="icon-canvas" class="ui" width="130" height="130"></canvas>
     <h2>IMMUNO-MAN</h2>
-    <p style="margin-bottom:18px;border-left:2px solid rgba(64,255,170,0.35);padding-left:10px;">You are a macrophage.<br>
+    <p style="border-left:2px solid rgba(64,255,170,0.35);padding-left:10px;">You are a macrophage.<br>
        Devour all microbes to advance.<br>
        Viruses hunt you — grab antibodies to fight back.<br>
        Microbes reproduce — clear them before they spread.<br>
@@ -3632,20 +3669,22 @@ function showGameOver(){
       <div style="font-family:Orbitron,monospace;font-size:.48rem;letter-spacing:2px;color:#2a5540;margin-top:-6px;">COMBI SCORE</div>
     </div>
     <div style="position:absolute;bottom:16px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:all;">
-      <div id="submit-area" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;height:82px;">
+      <div id="submit-area" class="end-submit-area">
         <div id="submit-before" style="display:flex;flex-direction:column;align-items:center;gap:8px;">
           <p style="font-size:.75rem;color:#2a5040;margin:0">Enter your initials:</p>
           <div class="name-entry" id="name-entry">
-            <div class="letter-box active" id="lb0">A</div>
-            <div class="letter-box" id="lb1">A</div>
-            <div class="letter-box" id="lb2">A</div>
+            <div class="letter-col"><button class="letter-btn-ud" id="up0">▲</button><div class="letter-box active" id="lb0">A</div><button class="letter-btn-ud" id="dn0">▼</button></div>
+            <div class="letter-col"><button class="letter-btn-ud" id="up1">▲</button><div class="letter-box" id="lb1">A</div><button class="letter-btn-ud" id="dn1">▼</button></div>
+            <div class="letter-col"><button class="letter-btn-ud" id="up2">▲</button><div class="letter-box" id="lb2">A</div><button class="letter-btn-ud" id="dn2">▼</button></div>
           </div>
           <button id="submit-score" class="btn-gold">SUBMIT SCORE</button>
         </div>
-        <div id="submit-after" style="display:none;font-size:.7rem;color:#2a5540;letter-spacing:2px;font-family:Orbitron,monospace;">SCORE RECORDED</div>
+        <div id="submit-after" style="display:none;" class="end-score-recorded">SCORE RECORDED</div>
       </div>
-      <button id="btn">PLAY AGAIN</button>
-      <button id="btn-menu" class="btn-secondary">MAIN MENU</button>
+      <div class="end-btns">
+        <button id="btn">PLAY AGAIN</button>
+        <button id="btn-menu" class="btn-secondary">MAIN MENU</button>
+      </div>
     </div>
   `;
 
@@ -3695,9 +3734,11 @@ function showGameOver(){
 
   document.getElementById('submit-score').addEventListener('click', submitScore, {once:true});
 
-  // Letter box clicks
+  // Letter box clicks — move cursor
   for(let i=0;i<3;i++){
     document.getElementById('lb'+i).addEventListener('click',()=>{ cursor=i; render(); });
+    document.getElementById('up'+i).addEventListener('click',()=>{ cursor=i; letters[i]=cycleChar(letters[i],1); render(); });
+    document.getElementById('dn'+i).addEventListener('click',()=>{ cursor=i; letters[i]=cycleChar(letters[i],-1); render(); });
   }
 
   function goPlay(){
@@ -4970,7 +5011,7 @@ function _runPreview(idx, label){
 
 document.addEventListener('keydown', e => {
   if(!(e.shiftKey && (e.key === 'I' || e.key === 'i'))) return;
-  if(state !== 'idle' && state !== 'over') return;
+  if(state !== 'idle') return;
   const active = IL_BANK.map((_,i) => i).filter(i => interludeIsActive(IL_BANK[i]));
   if(!active.length){ console.warn('[Immuno-Man] No active interludes to preview.'); return; }
   _previewILIdx = (_previewILIdx + 1) % active.length;
@@ -5060,37 +5101,561 @@ function disarmRefreshGuard(){
 
 document.addEventListener('keydown', e => {
   if(!(e.shiftKey && (e.key === 'R' || e.key === 'r'))) return;
+  if(state !== 'idle' && state !== 'over') return;
   downloadSessionCSV();
 });
 
 // ─── Shift+Q — Question Bank CSV Export ──────────────────────
-// Downloads QUESTION_BANK as a CSV. Developer/lecturer use only.
-// Columns: index, topic_id, topic_label, question, choice_a, choice_b,
-//          choice_c, choice_d, correct_index, correct_answer, enabled
+// Downloads QUESTION_BANK as a CSV. Round-trip format — matches Shift+U upload.
+// Columns: topic, enabled, q, choice_a, choice_b, choice_c, choice_d,
+//          answer, ordered, explanation, ref
 function downloadQuestionBankCSV(){
-  const cols = ['index','topic_id','topic_label','question',
+  const cols = ['topic','topic_enabled','q',
     'choice_a','choice_b','choice_c','choice_d',
-    'correct_index','correct_answer','enabled','ordered'].join(',');
+    'answer','ordered','explanation','ref'].join(',');
   const esc = s => `"${String(s||'').replace(/"/g,'""')}"`;
-  const rows = QUESTION_BANK.map((q,i)=>{
-    const topicId    = q.topic ?? '';
-    const topicLabel = (TOPIC_REGISTRY[topicId]||{}).label || '';
-    const enabled    = q.enabled === false ? 'false' : 'true';
-    const ordered    = q.ordered === true   ? 'true'  : 'false';
+  const ANSWER_LETTERS = ['A','B','C','D'];
+  const rows = QUESTION_BANK.map((q)=>{
+    const topicLabel   = (TOPIC_REGISTRY[q.topic]||{}).label || String(q.topic);
+    const topicEnabled = (TOPIC_REGISTRY[q.topic]||{}).enabled === false ? 'false' : 'true';
+    const enabled      = q.enabled === false ? 'false' : 'true';
+    const ordered      = q.ordered === true  ? 'true'  : 'false';
+    const answerLetter = ANSWER_LETTERS[q.correct] || 'A';
+    const choices      = q.choices || [];
     return [
-      i+1, topicId, esc(topicLabel), esc(q.q),
-      esc(q.choices[0]), esc(q.choices[1]), esc(q.choices[2]), esc(q.choices[3]),
-      q.correct, esc(q.choices[q.correct]), enabled, ordered
+      esc(topicLabel), topicEnabled, esc(q.q),
+      esc(choices[0]||''), esc(choices[1]||''), esc(choices[2]||''), esc(choices[3]||''),
+      answerLetter, ordered, esc(q.explanation||''), esc(q.ref||'')
     ].join(',');
   }).join('\n');
   const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
   triggerDownload(`immunoman_questions_${dateTag}.csv`, cols+'\n'+rows, 'text/csv');
   console.log(`[Immuno-Man] Question bank exported — ${QUESTION_BANK.length} question(s).`);
 }
+
+function showExportOverlay(){
+  if(document.getElementById('export-overlay')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'export-overlay';
+  overlay.style.cssText = `
+    position:fixed; inset:0; z-index:200;
+    background:rgba(3,8,16,.97);
+    -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; font-family:'Exo 2',sans-serif;
+  `;
+
+  const totalQ   = QUESTION_BANK.length;
+  const activeQ  = QUESTION_BANK.filter(q => questionIsActive(q)).length;
+  const totalT   = Object.keys(TOPIC_REGISTRY).length;
+  const activeT  = Object.values(TOPIC_REGISTRY).filter(t => t.enabled !== false).length;
+
+  overlay.innerHTML = `
+    <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;
+      letter-spacing:3px;color:#40ffaa;text-shadow:0 0 16px #40ffaa;">
+      EXPORT QUESTION BANK
+    </div>
+    <div style="font-size:.78rem;color:#4a9970;text-align:center;line-height:1.8;max-width:400px;">
+      <strong style="color:#ffdd44;">${totalQ}</strong> question(s)
+      (<strong style="color:#40ffaa;">${activeQ}</strong> active) across
+      <strong style="color:#ffdd44;">${totalT}</strong> topic(s)
+      (<strong style="color:#40ffaa;">${activeT}</strong> enabled)
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:stretch;gap:12px;width:400px;">
+
+      <!-- CSV -->
+      <div style="border:1px solid rgba(64,255,170,.15);border-radius:4px;padding:12px 16px;
+        display:flex;flex-direction:column;gap:6px;">
+        <div style="font-family:'Orbitron',monospace;font-size:.65rem;letter-spacing:2px;
+          color:#40ffaa;">↓ CSV</div>
+        <div style="font-size:.72rem;color:#4a9970;line-height:1.6;">
+          Exports the full question bank as a spreadsheet-compatible CSV.<br>
+          Edit in Excel or Google Sheets, then re-upload via <strong style="color:#40ffaa;">Shift+U</strong>
+          to convert back to an HTML snippet.
+        </div>
+        <button id="export-csv-btn"
+          style="font-family:'Orbitron',monospace;font-size:.75rem;font-weight:700;
+          letter-spacing:2px;border-radius:4px;padding:5px 18px;cursor:pointer;align-self:flex-start;
+          border:2px solid #40ffaa;color:#030a14;background:#40ffaa;">
+          ↓ CSV
+        </button>
+      </div>
+
+      <!-- HTML SNIPPET -->
+      <div style="border:1px solid rgba(255,221,68,.2);border-radius:4px;padding:12px 16px;
+        display:flex;flex-direction:column;gap:6px;">
+        <div style="font-family:'Orbitron',monospace;font-size:.65rem;letter-spacing:2px;
+          color:#ffdd44;">↓ HTML SNIPPET</div>
+        <div style="font-size:.72rem;color:#4a9970;line-height:1.6;">
+          Downloads a <strong style="color:#ffdd44;">.txt</strong> file containing the complete
+          <strong style="color:#ffdd44;">TOPIC_REGISTRY</strong> and
+          <strong style="color:#ffdd44;">QUESTION_BANK</strong> blocks,
+          ready to paste directly into the HTML source file.<br>
+          Instructions are included at the top of the downloaded file.
+        </div>
+        <button id="export-html-btn"
+          style="font-family:'Orbitron',monospace;font-size:.75rem;font-weight:700;
+          letter-spacing:2px;border-radius:4px;padding:5px 18px;cursor:pointer;align-self:flex-start;
+          border:2px solid rgba(255,221,68,.45);color:#ffdd44;background:transparent;">
+          ↓ HTML SNIPPET
+        </button>
+      </div>
+
+    </div>
+    <button id="export-close-btn" class="btn-secondary"
+      style="font-family:'Orbitron',monospace;font-size:.8rem;">
+      CLOSE
+    </button>
+  `;
+  document.body.appendChild(overlay);
+
+  document.getElementById('export-csv-btn').addEventListener('click', ()=>{
+    downloadQuestionBankCSV();
+    overlay.remove();
+  });
+  document.getElementById('export-html-btn').addEventListener('click', ()=>{
+    downloadFullBankAsHTML();
+    overlay.remove();
+  });
+  document.getElementById('export-close-btn').addEventListener('click', ()=>{
+    overlay.remove();
+  });
+}
+
 document.addEventListener('keydown', e => {
   if(!(e.shiftKey && (e.key === 'Q' || e.key === 'q'))) return;
-  downloadQuestionBankCSV();
+  if(state !== 'idle') return;
+  showExportOverlay();
 });
+
+// ─── Shift+U — Question Bank CSV Upload ──────────────────────
+// Accepts a CSV matching the Shift+Q export format.
+// Validates each row; surfaces errors; merges or replaces for this session only.
+// Columns: topic, topic_enabled, q, choice_a, choice_b, choice_c, choice_d,
+//          answer (A/B/C/D), ordered, explanation (opt), ref (opt)
+
+function showUploadOverlay(){
+  if(document.getElementById('upload-overlay')) return;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'upload-overlay';
+  overlay.style.cssText = `
+    position:fixed; inset:0; z-index:200;
+    background:rgba(3,8,16,.97);
+    -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:14px; font-family:'Exo 2',sans-serif;
+  `;
+
+  overlay.innerHTML = `
+    <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;
+      letter-spacing:3px;color:#40ffaa;text-shadow:0 0 16px #40ffaa;">
+      QUESTION BANK CSV
+    </div>
+    <div style="font-size:.75rem;color:#4a9970;text-align:center;line-height:1.7;max-width:420px;">
+      CSV must match the <strong style="color:#40ffaa;">Shift+Q</strong> export format.<br>
+      Required: <span style="color:#ffdd44;font-family:'Orbitron',monospace;font-size:.62rem;">topic, topic_enabled, q, choice_a–d, answer, ordered</span><br>
+      Optional: <span style="color:#2a7a50;font-family:'Orbitron',monospace;font-size:.62rem;">explanation, ref</span>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <label style="display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;">
+        <div style="font-family:'Orbitron',monospace;font-size:.7rem;letter-spacing:2px;
+          color:#030a14;background:#40ffaa;border:2px solid #40ffaa;border-radius:4px;
+          padding:6px 22px;cursor:pointer;transition:all .2s;"
+          onmouseover="this.style.background='#72ffca'" onmouseout="this.style.background='#40ffaa'">
+          CHOOSE FILE
+        </div>
+        <input id="upload-file-input" type="file" accept=".csv" style="display:none;">
+      </label>
+    </div>
+    <div id="upload-filename" style="font-size:.7rem;color:#2a5540;font-family:'Orbitron',monospace;
+      letter-spacing:1px;min-height:1.2em;"></div>
+    <div id="upload-status" style="max-width:420px;width:100%;max-height:140px;overflow-y:auto;
+      font-size:.72rem;line-height:1.7;text-align:left;display:none;
+      background:rgba(0,0,0,.4);border:1px solid rgba(64,255,170,.12);
+      border-radius:4px;padding:10px 14px;box-sizing:border-box;"></div>
+
+    <!-- CONVERT section -->
+    <div style="width:420px;border:1px solid rgba(64,255,170,.15);border-radius:4px;
+      padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-family:'Orbitron',monospace;font-size:.65rem;letter-spacing:2px;
+        color:#40ffaa;">CONVERT TO HTML SNIPPET</div>
+      <div style="font-size:.71rem;color:#4a9970;line-height:1.6;">
+        Converts the CSV to a paste-ready <strong style="color:#ffdd44;">.txt</strong> file
+        containing the full <strong style="color:#ffdd44;">TOPIC_REGISTRY</strong> and
+        <strong style="color:#ffdd44;">QUESTION_BANK</strong> blocks.
+        Paste over the existing blocks in the HTML file to make changes permanent.
+        Instructions are included at the top of the downloaded file.
+      </div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:flex-start;gap:6px;cursor:pointer;font-size:.72rem;color:#4a9970;max-width:180px;">
+          <input type="radio" name="convert-mode" value="csv-only" checked
+            style="accent-color:#40ffaa;margin-top:2px;flex-shrink:0;">
+          <span><strong style="color:#40ffaa;">CSV only</strong> — snippet contains exactly the uploaded questions. Use when replacing the bank entirely.</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:6px;cursor:pointer;font-size:.72rem;color:#4a9970;max-width:180px;">
+          <input type="radio" name="convert-mode" value="csv-plus-existing"
+            style="accent-color:#40ffaa;margin-top:2px;flex-shrink:0;">
+          <span><strong style="color:#40ffaa;">CSV + existing</strong> — snippet includes uploaded questions plus those already hardcoded in the HTML. Use when adding to the existing bank.</span>
+        </label>
+      </div>
+      <button id="upload-html-btn" disabled
+        style="opacity:.4;font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;
+        letter-spacing:1px;border-radius:4px;padding:5px 16px;cursor:not-allowed;align-self:flex-start;
+        border:2px solid rgba(255,221,68,.45);color:#ffdd44;background:transparent;">
+        ↓ HTML SNIPPET
+      </button>
+    </div>
+
+    <!-- LOAD FOR TESTING section -->
+    <div style="width:420px;border:1px solid rgba(64,255,170,.1);border-radius:4px;
+      padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-family:'Orbitron',monospace;font-size:.65rem;letter-spacing:2px;
+        color:#4a9970;">LOAD FOR TESTING</div>
+      <div style="font-size:.71rem;color:#2a5540;line-height:1.6;">
+        Injects questions into this session so you can play-test them immediately.
+        Does <strong style="color:#4a9970;">not</strong> modify the HTML file —
+        questions are lost on page refresh. Use Convert (above) to make changes permanent.
+      </div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:flex-start;gap:6px;cursor:pointer;font-size:.72rem;color:#4a9970;max-width:180px;">
+          <input type="radio" name="load-mode" value="merge" checked
+            style="accent-color:#40ffaa;margin-top:2px;flex-shrink:0;">
+          <span><strong style="color:#40ffaa;">Merge</strong> — adds uploaded questions alongside the existing bank.</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:6px;cursor:pointer;font-size:.72rem;color:#4a9970;max-width:180px;">
+          <input type="radio" name="load-mode" value="replace"
+            style="accent-color:#40ffaa;margin-top:2px;flex-shrink:0;">
+          <span><strong style="color:#40ffaa;">Replace</strong> — removes all existing questions and loads only the uploaded ones.</span>
+        </label>
+      </div>
+      <button id="upload-confirm-btn" disabled
+        style="opacity:.4;font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;
+        letter-spacing:1px;border-radius:4px;padding:5px 16px;cursor:not-allowed;align-self:flex-start;
+        border:2px solid #40ffaa;color:#030a14;background:#40ffaa;">
+        LOAD QUESTIONS
+      </button>
+    </div>
+
+    <button id="upload-close-btn" class="btn-secondary"
+      style="font-family:'Orbitron',monospace;font-size:.8rem;">
+      CLOSE
+    </button>
+  `;
+
+  document.body.appendChild(overlay);
+
+  let parsedQuestions = [];
+  let parsedTopics    = {};
+
+  document.getElementById('upload-close-btn').addEventListener('click', ()=>{
+    overlay.remove();
+  });
+
+  function resolveTopics(baseRegistry, incomingTopics){
+    const tempTopics = Object.assign({}, baseRegistry);
+    const labelToId  = {};
+    Object.entries(tempTopics).forEach(([id,t]) => labelToId[t.label] = Number(id));
+    let nextId = Math.max(0, ...Object.keys(tempTopics).map(Number)) + 1;
+    Object.entries(incomingTopics).forEach(([label, cfg]) => {
+      if(!(label in labelToId)){
+        tempTopics[nextId] = { label, enabled: cfg.enabled };
+        labelToId[label]   = nextId;
+        nextId++;
+      }
+    });
+    return { tempTopics, labelToId };
+  }
+
+  document.getElementById('upload-html-btn').addEventListener('click', ()=>{
+    if(!parsedQuestions.length) return;
+    const convertMode = document.querySelector('input[name="convert-mode"]:checked').value;
+    const { tempTopics, labelToId } = resolveTopics(TOPIC_REGISTRY, parsedTopics);
+    const resolved = parsedQuestions.map(q => {
+      const { _topicLabel, ...rest } = q;
+      return { ...rest, topic: labelToId[_topicLabel] };
+    });
+    const bank = convertMode === 'csv-plus-existing'
+      ? [...QUESTION_BANK, ...resolved]
+      : resolved;
+    downloadFullBankAsHTML(tempTopics, bank);
+  });
+
+  document.getElementById('upload-confirm-btn').addEventListener('click', ()=>{
+    if(!parsedQuestions.length) return;
+    const mode = document.querySelector('input[name="load-mode"]:checked').value;
+    applyUploadedQuestions(parsedQuestions, parsedTopics, mode);
+    overlay.remove();
+  });
+
+  document.getElementById('upload-file-input').addEventListener('change', function(){
+    const file = this.files[0];
+    if(!file) return;
+    document.getElementById('upload-filename').textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const result = parseUploadCSV(e.target.result);
+      parsedQuestions = result.questions;
+      parsedTopics    = result.topics;
+      renderUploadStatus(result);
+      const confirmBtn = document.getElementById('upload-confirm-btn');
+      const htmlBtn    = document.getElementById('upload-html-btn');
+      const enabled    = parsedQuestions.length > 0;
+      [confirmBtn, htmlBtn].forEach(btn => {
+        btn.disabled      = !enabled;
+        btn.style.opacity = enabled ? '1' : '.4';
+        btn.style.cursor  = enabled ? 'pointer' : 'not-allowed';
+      });
+    };
+    reader.readAsText(file);
+  });
+}
+
+// ── CSV parser ────────────────────────────────────────────────
+function parseUploadCSV(text){
+  const ANSWER_MAP = { A:0, B:1, C:2, D:3 };
+  const errors   = [];
+  const warnings = [];
+  const questions = [];
+  const topics    = {}; // label -> { enabled }
+
+  // Strip UTF-8 BOM if present (Excel adds this when saving CSV)
+  if(text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
+  // Split into lines, handle \r\n and \r
+  const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n')
+    .map(l=>l.trim()).filter(l=>l.length>0);
+
+  if(lines.length < 2){
+    errors.push('File appears empty or has no data rows.');
+    return { questions, topics, errors, warnings };
+  }
+
+  // Detect delimiter — Excel in some locales uses semicolons instead of commas
+  const firstLine = lines[0];
+  const delimiter = firstLine.indexOf(';') > firstLine.indexOf(',') ? ';' : ',';
+
+  // Parse header
+  const header = parseCSVRow(lines[0], delimiter).map(h=>h.trim().toLowerCase().replace(/[^\x20-\x7e]/g,''));
+  const col = h => header.indexOf(h);
+
+  const REQUIRED = ['topic','q','choice_a','choice_b','choice_c','choice_d','answer'];
+  const missing  = REQUIRED.filter(h => col(h) === -1);
+  if(missing.length){
+    errors.push(`Missing required column(s): ${missing.join(', ')}`);
+    return { questions, topics, errors, warnings };
+  }
+
+  // Parse rows
+  for(let i=1; i<lines.length; i++){
+    const rowNum = i + 1; // 1-based, row 1 = header
+    const cells  = parseCSVRow(lines[i], delimiter);
+    const get    = h => (cells[col(h)] || '').trim();
+
+    const topicLabel   = get('topic');
+    const topicEnabled = get('topic_enabled').toLowerCase() !== 'false';
+    const qText        = get('q');
+    const choiceA      = get('choice_a');
+    const choiceB      = get('choice_b');
+    const choiceC      = get('choice_c');
+    const choiceD      = get('choice_d');
+    const answerRaw    = get('answer').toUpperCase();
+    const orderedRaw   = get('ordered').toLowerCase();
+    const explanation  = col('explanation') !== -1 ? get('explanation') : '';
+    const ref          = col('ref')         !== -1 ? get('ref')         : '';
+
+    // Validate
+    const rowErrors = [];
+    if(!topicLabel)  rowErrors.push('topic is empty');
+    if(!qText)       rowErrors.push('q is empty');
+    if(!choiceA)     rowErrors.push('choice_a is empty');
+    if(!choiceB)     rowErrors.push('choice_b is empty');
+    if(!(answerRaw in ANSWER_MAP)) rowErrors.push(`answer "${answerRaw}" must be A, B, C, or D`);
+
+    if(answerRaw === 'C' && !choiceC) rowErrors.push('answer is C but choice_c is empty');
+    if(answerRaw === 'D' && !choiceD) rowErrors.push('answer is D but choice_d is empty');
+
+    if(rowErrors.length){
+      errors.push(`Row ${rowNum}: ${rowErrors.join('; ')}`);
+      continue;
+    }
+
+    // Register topic
+    if(!topics[topicLabel]){
+      topics[topicLabel] = { enabled: topicEnabled };
+    }
+
+    const choices = [choiceA, choiceB, choiceC, choiceD];
+
+    questions.push({
+      _topicLabel:  topicLabel,
+      q:            qText,
+      choices,
+      correct:      ANSWER_MAP[answerRaw],
+      ordered:      orderedRaw === 'true',
+      enabled:      true,
+      explanation:  explanation,
+      ref:          ref,
+    });
+  }
+
+  return { questions, topics, errors, warnings };
+}
+
+// Minimal CSV row parser — handles quoted fields with embedded commas/semicolons and quotes.
+// Also handles Excel's whole-row quoting where the entire row is wrapped in "..."
+function parseCSVRow(line, delimiter){
+  delimiter = delimiter || ',';
+  const cells = [];
+  let cur = '', inQ = false;
+  for(let i=0; i<line.length; i++){
+    const ch = line[i];
+    if(inQ){
+      if(ch==='"' && line[i+1]==='"'){ cur+='"'; i++; }
+      else if(ch==='"'){ inQ=false; }
+      else { cur+=ch; }
+    } else {
+      if(ch==='"'){ inQ=true; }
+      else if(ch===delimiter){ cells.push(cur); cur=''; }
+      else { cur+=ch; }
+    }
+  }
+  cells.push(cur);
+
+  // Excel sometimes wraps the entire row in outer quotes, producing a single
+  // cell containing what should be the full delimiter-separated row. Detect and re-parse.
+  if(cells.length === 1 && cells[0].indexOf(delimiter) !== -1){
+    return parseCSVRow(cells[0], delimiter);
+  }
+
+  return cells;
+}
+
+// ── Status renderer ───────────────────────────────────────────
+function renderUploadStatus(result){
+  const el = document.getElementById('upload-status');
+  if(!el) return;
+  el.style.display = 'block';
+  const lines = [];
+
+  if(result.errors.length){
+    lines.push(`<span style="color:#ff4466;font-family:'Orbitron',monospace;font-size:.65rem;letter-spacing:1px;">ERRORS (${result.errors.length})</span>`);
+    result.errors.forEach(e => lines.push(`<span style="color:#ff7799;">⚠ ${e}</span>`));
+  }
+  if(result.questions.length){
+    const topicNames = Object.keys(result.topics);
+    lines.push(`<span style="color:#40ffaa;font-family:'Orbitron',monospace;font-size:.65rem;letter-spacing:1px;">READY TO LOAD</span>`);
+    lines.push(`<span style="color:#4a9970;">✓ ${result.questions.length} question(s) parsed successfully</span>`);
+    lines.push(`<span style="color:#4a9970;">✓ ${topicNames.length} topic(s): ${topicNames.join(', ')}</span>`);
+  }
+  if(!result.errors.length && !result.questions.length){
+    lines.push(`<span style="color:#ff4466;">No valid questions found.</span>`);
+  }
+
+  el.innerHTML = lines.join('<br>');
+}
+
+// ── Apply uploaded questions to live bank ─────────────────────
+function applyUploadedQuestions(questions, topicMap, mode){
+  // Step 1: resolve / create topic IDs
+  const labelToId = {};
+  // Build reverse map of existing topics
+  Object.entries(TOPIC_REGISTRY).forEach(([id, t]) => {
+    labelToId[t.label] = Number(id);
+  });
+  // Assign IDs for new topics
+  let nextId = Math.max(0, ...Object.keys(TOPIC_REGISTRY).map(Number)) + 1;
+  Object.entries(topicMap).forEach(([label, cfg]) => {
+    if(!(label in labelToId)){
+      TOPIC_REGISTRY[nextId] = { label, enabled: cfg.enabled };
+      labelToId[label] = nextId;
+      nextId++;
+    } else {
+      // Topic exists — respect uploaded topic_enabled if replacing, leave alone if merging
+      if(mode === 'replace'){
+        TOPIC_REGISTRY[labelToId[label]].enabled = cfg.enabled;
+      }
+    }
+  });
+
+  // Step 2: attach resolved topic IDs to questions
+  const resolved = questions.map(q => {
+    const { _topicLabel, ...rest } = q;
+    return { ...rest, topic: labelToId[_topicLabel] };
+  });
+
+  // Step 3: apply
+  if(mode === 'replace'){
+    QUESTION_BANK.length = 0;
+    resolved.forEach(q => QUESTION_BANK.push(q));
+  } else {
+    resolved.forEach(q => QUESTION_BANK.push(q));
+  }
+
+  const modeLabel = mode === 'replace' ? 'replaced' : 'merged';
+  console.log(`[Immuno-Man] Question bank ${modeLabel} — ${QUESTION_BANK.length} total question(s).`);
+}
+
+document.addEventListener('keydown', e => {
+  if(!(e.shiftKey && (e.key === 'U' || e.key === 'u'))) return;
+  if(state !== 'idle') return;
+  showUploadOverlay();
+});
+
+// ─── HTML snippet generator ───────────────────────────────────
+// Generates a paste-ready JS snippet: full TOPIC_REGISTRY + full QUESTION_BANK.
+// topicRegistry and questionBank default to the live versions (Shift+Q path).
+// The upload path passes a pre-merged temp registry + combined bank.
+function downloadFullBankAsHTML(topicRegistry, questionBank){
+  topicRegistry = topicRegistry || TOPIC_REGISTRY;
+  questionBank  = questionBank  || QUESTION_BANK;
+  const esc = s => String(s||'').replace(/\\/g,'\\\\').replace(/"/g,'\\"');
+  const lines = [];
+
+  lines.push('// ╔══════════════════════════════════════════════════════════════════╗');
+  lines.push('// ║  Immuno-Man — paste-ready question bank snippet                  ║');
+  lines.push(`// ║  Generated: ${new Date().toISOString().slice(0,16).replace('T',' ')}                                   ║`);
+  lines.push('// ║                                                                  ║');
+  lines.push('// ║  HOW TO USE:                                                     ║');
+  lines.push('// ║  1. Open immunoman.html in a text editor                         ║');
+  lines.push('// ║  2. Find "const TOPIC_REGISTRY = {" — select from that line      ║');
+  lines.push('// ║     all the way to the closing "};" of QUESTION_BANK             ║');
+  lines.push('// ║  3. Paste this entire file over that selection                   ║');
+  lines.push('// ║  4. Save and push to GitHub                                      ║');
+  lines.push('// ╚══════════════════════════════════════════════════════════════════╝');
+  lines.push('');
+
+  // TOPIC_REGISTRY
+  lines.push('const TOPIC_REGISTRY = {');
+  Object.entries(topicRegistry).forEach(([id, t]) => {
+    const pad = ' '.repeat(Math.max(1, 4 - String(id).length));
+    lines.push(`  ${id}:${pad}{ label: '${esc(t.label)}', enabled: ${t.enabled} },`);
+  });
+  lines.push('};');
+  lines.push('');
+
+  // QUESTION_BANK
+  lines.push('const QUESTION_BANK = [');
+  questionBank.forEach(q => {
+    lines.push('  {');
+    lines.push(`    topic: ${q.topic},`);
+    lines.push(`    q: "${esc(q.q)}",`);
+    lines.push(`    choices: [`);
+    (q.choices||[]).forEach(c => lines.push(`      "${esc(c)}",`));
+    lines.push(`    ],`);
+    lines.push(`    correct: ${q.correct},`);
+    if(q.ordered)        lines.push(`    ordered: true,`);
+    if(q.enabled===false)lines.push(`    enabled: false,`);
+    if(q.explanation)    lines.push(`    explanation: "${esc(q.explanation)}",`);
+    if(q.ref)            lines.push(`    ref: "${esc(q.ref)}",`);
+    lines.push('  },');
+  });
+  lines.push('];');
+
+  const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
+  triggerDownload(`immunoman_questions_snippet_${dateTag}.txt`, lines.join('\n'), 'text/plain');
+  console.log(`[Immuno-Man] HTML snippet exported — ${questionBank.length} question(s).`);
+}
 
 // ─── Shift+S — Species Bank CSV Export ───────────────────────
 // Downloads HOST_SPECIES_BANK as a CSV. Developer/lecturer use only.
@@ -5117,6 +5682,7 @@ function downloadSpeciesBankCSV(){
 }
 document.addEventListener('keydown', e => {
   if(!(e.shiftKey && (e.key === 'S' || e.key === 's'))) return;
+  if(state !== 'idle') return;
   downloadSpeciesBankCSV();
 });
 
@@ -5130,6 +5696,7 @@ function downloadInterludeBankJSON(){
 }
 document.addEventListener('keydown', e => {
   if(!(e.shiftKey && (e.key === 'L' || e.key === 'l'))) return;
+  if(state !== 'idle') return;
   downloadInterludeBankJSON();
 });
 
@@ -5306,6 +5873,7 @@ function showHQSimOverlay(){
 
 document.addEventListener('keydown', e => {
   if(!(e.shiftKey && (e.key === 'H' || e.key === 'h'))) return;
+  if(state !== 'idle') return;
   showHQSimOverlay();
 });
 
@@ -5536,6 +6104,7 @@ function showDeepSimPicker(){
 
 document.addEventListener('keydown', e => {
   if(!(e.shiftKey && (e.key === 'Y' || e.key === 'y'))) return;
+  if(state !== 'idle') return;
   showDeepSimPicker();
 });
 
@@ -6182,7 +6751,13 @@ ictx  = setupHiDPICanvas(document.getElementById('icon-canvas'), 130, 130);
 ilctx = setupHiDPICanvas(document.getElementById('igg-left'),    56,  72);
 irctx = setupHiDPICanvas(document.getElementById('igg-right'),   56,  72);
 
-document.getElementById('btn').addEventListener('click', startGame, {once:true});
+document.getElementById('btn').addEventListener('click', ()=>{
+  // iOS Safari requires AudioContext creation + resume() to happen
+  // synchronously inside a user gesture. Call initAudio() here before
+  // any async work (reveal, quiz callbacks) loses the gesture context.
+  initAudio();
+  startGame();
+}, {once:true});
 startDrawIcon();
 titleIgGRaf = requestAnimationFrame(animTitleIgG);
 ctx.fillStyle='#030a14'; ctx.fillRect(0,0,logicalW,logicalH);
@@ -6381,6 +6956,11 @@ function scaleGame(){
   }
 }
 window.addEventListener('resize', scaleGame);
+// iOS Safari: browser chrome appearing/disappearing changes the visual
+// viewport but doesn't always fire window resize. visualViewport covers it.
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', scaleGame);
+}
 // Scale immediately (fonts may not be loaded yet but gives approximate layout),
 // then re-scale once fonts are confirmed ready to correct any FOIT-related shift.
 scaleGame();
