@@ -5103,11 +5103,8 @@ function disarmRefreshGuard(){
   _beforeUnloadArmed = false;
 }
 
-document.addEventListener('keydown', e => {
-  if(!(e.shiftKey && (e.key === 'R' || e.key === 'r'))) return;
-  if(state !== 'idle' && state !== 'over') return;
-  downloadSessionCSV();
-});
+// Shift+R old handler — now aliased to showStudentPanel(0) via Shift+M alias block (TODO: remove after Shift+M testing confirmed)
+// document.addEventListener('keydown', e => { if(!(e.shiftKey && (e.key==='R'||e.key==='r'))) return; if(state!=='idle'&&state!=='over') return; downloadSessionCSV(); });
 
 // ─── Shift+Q — Question Bank CSV Export ──────────────────────
 // Downloads QUESTION_BANK as a CSV. Round-trip format — matches Shift+U upload.
@@ -5226,11 +5223,8 @@ function showExportOverlay(){
   });
 }
 
-document.addEventListener('keydown', e => {
-  if(!(e.shiftKey && (e.key === 'Q' || e.key === 'q'))) return;
-  if(state !== 'idle') return;
-  showExportOverlay();
-});
+// Shift+Q old handler — now aliased to showTeacherPanel(0) via Shift+D alias block (TODO: remove after Shift+D testing confirmed)
+// document.addEventListener('keydown', e => { if(!(e.shiftKey && (e.key==='Q'||e.key==='q'))) return; if(state!=='idle') return; showExportOverlay(); });
 
 // ─── Shift+U — Question Bank CSV Upload ──────────────────────
 // Accepts a CSV matching the Shift+Q export format.
@@ -5312,7 +5306,7 @@ function showUploadOverlay(){
     </div>
 
     <!-- LOAD FOR TESTING section -->
-    <div style="width:420px;border:1px solid rgba(64,255,170,.1);border-radius:4px;
+    <div style="width:420px;border:1px solid rgba(64,255,170,.15);border-radius:4px;
       padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
       <div style="font-family:'Orbitron',monospace;font-size:.65rem;letter-spacing:2px;
         color:#4a9970;">LOAD FOR TESTING</div>
@@ -5600,11 +5594,8 @@ function applyUploadedQuestions(questions, topicMap, mode){
   console.log(`[Mad MACs] Question bank ${modeLabel} — ${QUESTION_BANK.length} total question(s).`);
 }
 
-document.addEventListener('keydown', e => {
-  if(!(e.shiftKey && (e.key === 'U' || e.key === 'u'))) return;
-  if(state !== 'idle') return;
-  showUploadOverlay();
-});
+// Shift+U old handler — now aliased to showTeacherPanel(1) via Shift+D alias block (TODO: remove after Shift+D testing confirmed)
+// document.addEventListener('keydown', e => { if(!(e.shiftKey && (e.key==='U'||e.key==='u'))) return; if(state!=='idle') return; showUploadOverlay(); });
 
 // ─── HTML snippet generator ───────────────────────────────────
 // Generates a paste-ready JS snippet: full TOPIC_REGISTRY + full QUESTION_BANK.
@@ -5684,11 +5675,8 @@ function downloadSpeciesBankCSV(){
   triggerDownload(`madmacs_species_${dateTag}.csv`, cols+'\n'+rows, 'text/csv');
   console.log(`[Mad MACs] Species bank exported — ${HOST_SPECIES_BANK.length} species.`);
 }
-document.addEventListener('keydown', e => {
-  if(!(e.shiftKey && (e.key === 'S' || e.key === 's'))) return;
-  if(state !== 'idle') return;
-  downloadSpeciesBankCSV();
-});
+// Shift+S old handler — now aliased to showTeacherPanel(3) via Shift+D alias block (TODO: remove after Shift+D testing confirmed)
+// document.addEventListener('keydown', e => { if(!(e.shiftKey && (e.key==='S'||e.key==='s'))) return; if(state!=='idle') return; downloadSpeciesBankCSV(); });
 
 // ─── Shift+L — Interlude Bank JSON Export ────────────────────
 // Downloads IL_BANK as formatted JSON. Developer/lecturer use only.
@@ -5698,11 +5686,8 @@ function downloadInterludeBankJSON(){
   triggerDownload(`madmacs_interludes_${dateTag}.json`, json, 'application/json');
   console.log(`[Mad MACs] Interlude bank exported — ${IL_BANK.length} entry/entries.`);
 }
-document.addEventListener('keydown', e => {
-  if(!(e.shiftKey && (e.key === 'L' || e.key === 'l'))) return;
-  if(state !== 'idle') return;
-  downloadInterludeBankJSON();
-});
+// Shift+L old handler — now aliased to showTeacherPanel(2) via Shift+D alias block (TODO: remove after Shift+D testing confirmed)
+// document.addEventListener('keydown', e => { if(!(e.shiftKey && (e.key==='L'||e.key==='l'))) return; if(state!=='idle') return; downloadInterludeBankJSON(); });
 
 // ─── Shift+H — HQ Simulation Tool ───────────────────────────
 // Runs 15-level HQ simulations for every enabled species using exact
@@ -5875,11 +5860,8 @@ function showHQSimOverlay(){
   });
 }
 
-document.addEventListener('keydown', e => {
-  if(!(e.shiftKey && (e.key === 'H' || e.key === 'h'))) return;
-  if(state !== 'idle') return;
-  showHQSimOverlay();
-});
+// Shift+H old handler — now aliased to showStudentPanel(1) via Shift+M alias block (TODO: remove after Shift+M testing confirmed)
+// document.addEventListener('keydown', e => { if(!(e.shiftKey && (e.key==='H'||e.key==='h'))) return; if(state!=='idle') return; showHQSimOverlay(); });
 
 
 
@@ -6106,11 +6088,773 @@ function showDeepSimPicker(){
   document.getElementById('dsp-close').addEventListener('click', ()=> overlay.remove());
 }
 
+// Shift+Y old handler — now aliased to showStudentPanel(1) via Shift+M alias block (TODO: remove after Shift+M testing confirmed)
+// document.addEventListener('keydown', e => { if(!(e.shiftKey && (e.key==='Y'||e.key==='y'))) return; if(state!=='idle') return; showDeepSimPicker(); });
+
+// ╔══════════════════════════════════════════════════════════════════════╗
+// ║  MAD MACs: BEHIND THE SPLEENS — TEACHER (Shift+D) & STUDENT (Shift+M) PANELS
+// ║
+// ║  Shift+D — Teacher tools · idle only
+// ║    Tab 0: EXPORT QUIZ BANK  — ↓ CSV, ↓ HTML Snippet
+// ║    Tab 1: UPLOAD QUIZ BANK  — Convert + Load For Testing
+// ║    Tab 2: INTERLUDES        — ↓ JSON, ▶ Preview button (calls Shift+I logic)
+// ║    Tab 3: ARCHETYPES        — ↓ Species CSV
+// ║
+// ║  Shift+M — Student tools · idle + game-over
+// ║    Tab 0: MY SESSION        — ↓ Session CSV
+// ║    Tab 1: SIMULATIONS       — ▶ HQ Sim, ▶ Deep HQ Sim picker
+// ║
+// ║  Aliases (TODO: remove after Shift+D/M testing confirmed):
+// ║    Shift+Q → Shift+D tab 0 · Shift+U → tab 1 · Shift+L → tab 2 · Shift+S → tab 3
+// ║    Shift+R → Shift+M tab 0 · Shift+H → tab 1 · Shift+Y → tab 1
+// ║
+// ║  Shift+I: kept as live independent shortcut; INTERLUDES tab has a
+// ║  "Preview Next" button that calls the same _previewILIdx / _runPreview logic.
+// ╚══════════════════════════════════════════════════════════════════════╝
+
+// ── shared BTS panel helpers ──────────────────────────────────────────
+
+function _btsGetOrCreate(id) {
+  const existing = document.getElementById(id);
+  if (existing) { existing.remove(); return null; }
+  const ov = document.createElement('div');
+  ov.id = id;
+  ov.style.cssText = `
+    position:fixed;inset:0;z-index:210;
+    background:rgba(3,8,16,.97);
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+    display:flex;flex-direction:column;
+    font-family:'Exo 2',sans-serif;
+  `;
+  return ov;
+}
+
+function _btsHeader(panelTitle) {
+  const hdr = document.createElement('div');
+  hdr.style.cssText = `
+    flex-shrink:0;padding:16px 24px 0;
+    border-bottom:1px solid rgba(64,255,170,.12);
+  `;
+  hdr.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:.75rem;font-weight:700;
+          letter-spacing:3px;color:#2a7a50;text-transform:uppercase;margin-bottom:5px;">
+          Mad MACs: Behind the Spleens
+        </div>
+        <div style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:900;
+          letter-spacing:3px;color:#40ffaa;text-shadow:0 0 14px rgba(64,255,170,.45);">
+          ${panelTitle}
+        </div>
+      </div>
+      <button class="bts-close-x" style="background:none;border:none;color:#4a9970;
+        font-size:1.2rem;cursor:pointer;padding:0 4px;line-height:1;
+        font-family:'Orbitron',monospace;transition:color .15s;"
+        onmouseover="this.style.color='#40ffaa'" onmouseout="this.style.color='#4a9970'"
+        title="Close">✕</button>
+    </div>
+  `;
+  return hdr;
+}
+
+function _btsTabBar(labels, startIdx) {
+  const bar = document.createElement('div');
+  bar.style.cssText = `
+    display:flex;flex-shrink:0;
+    border-bottom:1px solid rgba(64,255,170,.12);
+    padding:0 24px;background:rgba(3,8,16,.6);
+    overflow-x:auto;
+  `;
+  labels.forEach((lbl, i) => {
+    const btn = document.createElement('button');
+    btn.dataset.ti = i;
+    btn.textContent = lbl;
+    const active = i === startIdx;
+    btn.style.cssText = `
+      font-family:'Orbitron',monospace;font-size:.65rem;font-weight:700;
+      letter-spacing:2px;cursor:pointer;background:none;border:none;
+      padding:11px 16px;white-space:nowrap;transition:all .15s;
+      border-bottom:2px solid ${active ? '#40ffaa' : 'transparent'};
+      color:${active ? '#40ffaa' : '#3a7a58'};
+    `;
+    bar.appendChild(btn);
+  });
+  return bar;
+}
+
+function _btsActivate(bar, area, idx) {
+  [...bar.children].forEach((b, i) => {
+    const a = i === idx;
+    b.style.borderBottom = a ? '2px solid #40ffaa' : '2px solid transparent';
+    b.style.color = a ? '#40ffaa' : '#3a7a58';
+  });
+  [...area.children].forEach((p, i) => { p.style.display = i === idx ? 'flex' : 'none'; });
+}
+
+function _btsCard(accentColor, title, bodyHTML, btnId, btnLabel, btnSolid) {
+  return `
+    <div style="border:1px solid rgba(64,255,170,.15);border-radius:4px;
+      padding:16px 20px;display:flex;flex-direction:column;gap:10px;">
+      <div style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:700;
+        letter-spacing:2px;color:#40ffaa;">${title}</div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:1rem;color:#5abf8a;line-height:1.75;">${bodyHTML}</div>
+      <button id="${btnId}" style="font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;letter-spacing:2px;border-radius:4px;padding:6px 20px;cursor:pointer;align-self:flex-start;transition:opacity .15s;border:2px solid #40ffaa;color:#030a14;background:#40ffaa;">${btnLabel}</button>
+    </div>`;
+}
+
+// ── Shift+D — Teacher panel ───────────────────────────────────────────
+function showTeacherPanel(startTab) {
+  startTab = startTab || 0;
+  const ov = _btsGetOrCreate('bts-teacher');
+  if (!ov) return;
+
+  const hdr  = _btsHeader('TEACHER TOOLS');
+  const TABS = ['EXPORT QUIZ BANK', 'UPLOAD QUIZ BANK', 'INTERLUDES', 'ARCHETYPES'];
+  const bar  = _btsTabBar(TABS, startTab);
+
+  const area = document.createElement('div');
+  area.style.cssText = 'flex:1;overflow-y:auto;padding:24px;';
+
+  // ── tab 0: EXPORT QUIZ BANK ──────────────────────────────────
+  const tq  = QUESTION_BANK.length;
+  const aq  = QUESTION_BANK.filter(q => questionIsActive(q)).length;
+  const tt  = Object.keys(TOPIC_REGISTRY).length;
+  const at  = Object.values(TOPIC_REGISTRY).filter(t => t.enabled !== false).length;
+
+  const p0 = document.createElement('div');
+  p0.style.cssText = 'flex-direction:column;gap:16px;max-width:460px;margin:0 auto;';
+  p0.innerHTML = `
+    <div style="font-family:'Exo 2',sans-serif;font-size:1rem;color:#5abf8a;line-height:1.75;">
+      <strong style="color:#40ffaa;">${tq}</strong> question(s)
+      (<strong style="color:#40ffaa;">${aq}</strong> active) across
+      <strong style="color:#40ffaa;">${tt}</strong> topic(s)
+      (<strong style="color:#40ffaa;">${at}</strong> enabled)
+    </div>
+    ${_btsCard('64,255,170','↓ CSV',
+      'Exports the full question bank as a spreadsheet-compatible CSV. Edit in Excel or Google Sheets, then re-upload via <strong style="color:#40ffaa;">Upload Quiz Bank</strong> to convert back.',
+      'dt-csv-btn','↓ CSV',true)}
+    ${_btsCard('255,221,68','↓ HTML SNIPPET',
+      'Downloads a <strong style="color:#40ffaa;">.txt</strong> file containing the complete <strong style="color:#40ffaa;">TOPIC_REGISTRY</strong> and <strong style="color:#40ffaa;">QUESTION_BANK</strong> blocks, ready to paste into the HTML source. Instructions included.',
+      'dt-html-btn','↓ HTML SNIPPET',false)}
+  `;
+
+  // ── tab 1: UPLOAD QUIZ BANK ──────────────────────────────────
+  const p1 = document.createElement('div');
+  p1.style.cssText = 'flex-direction:column;gap:14px;max-width:460px;margin:0 auto;';
+  p1.innerHTML = `
+    <div style="font-family:'Exo 2',sans-serif;font-size:1rem;color:#5abf8a;line-height:1.75;">
+      CSV must match the <strong style="color:#40ffaa;">Export Quiz Bank</strong> format.<br>
+      Required: <span style="color:#40ffaa;font-family:'Orbitron',monospace;font-size:.78rem;">topic, topic_enabled, q, choice_a–d, answer, ordered</span><br>
+      Optional: <span style="color:#3a9a68;font-family:'Orbitron',monospace;font-size:.78rem;">explanation, ref</span>
+    </div>
+    <div>
+      <label style="display:inline-block;">
+        <div id="du-choose-btn" style="font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;letter-spacing:2px;border-radius:4px;padding:6px 20px;cursor:pointer;align-self:flex-start;transition:opacity .15s;border:2px solid #40ffaa;color:#030a14;background:#40ffaa;display:inline-block;text-align:center;">
+          CHOOSE FILE
+        </div>
+        <input id="du-file" type="file" accept=".csv" style="display:none;">
+      </label>
+    </div>
+    <div id="du-filename" style="font-family:'Exo 2',sans-serif;font-size:.9rem;color:#3a9a68;min-height:1.4em;letter-spacing:.5px;"></div>
+    <div id="du-status" style="display:none;max-width:460px;max-height:160px;overflow-y:auto;font-family:'Exo 2',sans-serif;font-size:.9rem;line-height:1.8;background:rgba(0,0,0,.4);border:1px solid rgba(64,255,170,.12);border-radius:4px;padding:12px 16px;box-sizing:border-box;"></div>
+    <div style="border:1px solid rgba(64,255,170,.15);border-radius:4px;
+      padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:700;
+        letter-spacing:2px;color:#40ffaa;">CONVERT TO HTML SNIPPET</div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:1rem;color:#5abf8a;line-height:1.75;">
+        Converts the CSV to a paste-ready <strong style="color:#40ffaa;">.txt</strong> file containing the full <strong style="color:#40ffaa;">TOPIC_REGISTRY</strong> and <strong style="color:#40ffaa;">QUESTION_BANK</strong> blocks. Instructions included at the top of the file.
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.95rem;color:#5abf8a;max-width:210px;">
+          <input type="radio" name="du-conv" value="csv-only" checked
+            style="accent-color:#40ffaa;margin-top:3px;flex-shrink:0;">
+          <span><strong style="color:#40ffaa;">CSV only</strong> — snippet contains exactly the uploaded questions.</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.95rem;color:#5abf8a;max-width:210px;">
+          <input type="radio" name="du-conv" value="csv-plus-existing"
+            style="accent-color:#40ffaa;margin-top:3px;flex-shrink:0;">
+          <span><strong style="color:#40ffaa;">CSV + existing</strong> — adds uploaded questions to those already hardcoded.</span>
+        </label>
+      </div>
+      <button id="du-html-btn" disabled style="font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;letter-spacing:2px;border-radius:4px;padding:6px 20px;cursor:pointer;align-self:flex-start;transition:opacity .15s;border:2px solid #40ffaa;color:#030a14;background:#40ffaa;opacity:.4;cursor:not-allowed;">↓ HTML SNIPPET</button>
+    </div>
+    <div style="border:1px solid rgba(64,255,170,.1);border-radius:4px;
+      padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:700;
+        letter-spacing:2px;color:#40ffaa;">LOAD FOR TESTING</div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:1rem;color:#5abf8a;line-height:1.75;">
+        Injects questions into this session only. Lost on page refresh. Use Convert to make changes permanent.
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.95rem;color:#5abf8a;max-width:210px;">
+          <input type="radio" name="du-load" value="merge" checked
+            style="accent-color:#40ffaa;margin-top:3px;flex-shrink:0;">
+          <span><strong style="color:#40ffaa;">Merge</strong> — adds uploaded questions alongside existing bank.</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.95rem;color:#5abf8a;max-width:210px;">
+          <input type="radio" name="du-load" value="replace"
+            style="accent-color:#40ffaa;margin-top:3px;flex-shrink:0;">
+          <span><strong style="color:#40ffaa;">Replace</strong> — removes existing questions, loads uploaded only.</span>
+        </label>
+      </div>
+      <button id="du-load-btn" disabled style="font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;letter-spacing:2px;border-radius:4px;padding:6px 20px;cursor:pointer;align-self:flex-start;transition:opacity .15s;border:2px solid #40ffaa;color:#030a14;background:#40ffaa;opacity:.4;cursor:not-allowed;">LOAD QUESTIONS</button>
+    </div>
+  `;
+
+  // ── tab 2: INTERLUDES ────────────────────────────────────────
+  const p2 = document.createElement('div');
+  p2.style.cssText = 'flex-direction:column;gap:16px;max-width:460px;margin:0 auto;';
+  p2.innerHTML = `
+    ${_btsCard('64,255,170','↓ JSON',
+      'Downloads the full interlude bank as a formatted JSON file.',
+      'di-json-btn','↓ JSON',true)}
+    <div style="border:1px solid rgba(64,255,170,.15);border-radius:4px;
+      padding:14px 16px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:700;
+        letter-spacing:2px;color:#40ffaa;">PREVIEW INTERLUDES</div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:1rem;color:#5abf8a;line-height:1.75;">
+        Cycles through all active interlude animations on the start screen.<br>
+        Also available at any time via <strong style="color:#40ffaa;">Shift+I</strong>
+        directly on the start screen.
+      </div>
+      <button id="di-preview-btn" style="font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;letter-spacing:2px;border-radius:4px;padding:6px 20px;cursor:pointer;align-self:flex-start;transition:opacity .15s;border:2px solid #40ffaa;color:#030a14;background:#40ffaa;">▶ PREVIEW NEXT</button>
+    </div>
+  `;
+
+  // ── tab 3: ARCHETYPES ────────────────────────────────────────
+  const p3 = document.createElement('div');
+  p3.style.cssText = 'flex-direction:column;gap:16px;max-width:460px;margin:0 auto;';
+  p3.innerHTML = `
+    ${_btsCard('64,255,170','↓ SPECIES CSV',
+      `Downloads the full host species (archetype) bank as a CSV — all ${HOST_SPECIES_BANK.length} species with immune parameters, name pools, and taglines.`,
+      'da-csv-btn','↓ CSV',true)}
+  `;
+
+  [p0, p1, p2, p3].forEach((p, i) => {
+    p.style.display = i === startTab ? 'flex' : 'none';
+    area.appendChild(p);
+  });
+
+  ov.appendChild(hdr);
+  ov.appendChild(bar);
+  ov.appendChild(area);
+  document.body.appendChild(ov);
+
+  // tab switching
+  bar.addEventListener('click', e => {
+    const b = e.target.closest('button[data-ti]');
+    if (b) _btsActivate(bar, area, parseInt(b.dataset.ti));
+  });
+
+  // close
+  hdr.querySelector('.bts-close-x').addEventListener('click', () => ov.remove());
+  const escD = e => { if (e.key === 'Escape') { ov.remove(); document.removeEventListener('keydown', escD); } };
+  document.addEventListener('keydown', escD);
+
+  // ── tab 0 handlers ──
+  document.getElementById('dt-csv-btn').addEventListener('click', () => { downloadQuestionBankCSV(); ov.remove(); });
+  document.getElementById('dt-html-btn').addEventListener('click', () => { downloadFullBankAsHTML(); ov.remove(); });
+
+  // ── tab 1 handlers ──
+  let _du_q = [], _du_t = {};
+
+  document.getElementById('du-choose-btn').addEventListener('click', () => {
+    document.getElementById('du-file').click();
+  });
+
+  document.getElementById('du-file').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    document.getElementById('du-filename').textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const result = parseUploadCSV(e.target.result);
+      _du_q = result.questions;
+      _du_t = result.topics;
+      const statusEl = document.getElementById('du-status');
+      statusEl.style.display = 'block';
+      const lines = [];
+      if (result.errors.length) {
+        lines.push(`<span style="color:#ff4466;font-family:'Orbitron',monospace;font-size:.82rem;">ERRORS (${result.errors.length})</span>`);
+        result.errors.forEach(err => lines.push(`<span style="color:#ff7799;">⚠ ${err}</span>`));
+      }
+      if (result.questions.length) {
+        lines.push(`<span style="color:#40ffaa;font-family:'Orbitron',monospace;font-size:.82rem;">READY</span>`);
+        lines.push(`<span style="color:#4a9970;">✓ ${result.questions.length} question(s)</span>`);
+        lines.push(`<span style="color:#4a9970;">✓ ${Object.keys(result.topics).length} topic(s): ${Object.keys(result.topics).join(', ')}</span>`);
+      }
+      if (!result.errors.length && !result.questions.length)
+        lines.push(`<span style="color:#ff4466;">No valid questions found.</span>`);
+      statusEl.innerHTML = lines.join('<br>');
+      const ok = _du_q.length > 0;
+      ['du-html-btn', 'du-load-btn'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) { btn.disabled = !ok; btn.style.opacity = ok ? '1' : '.4'; btn.style.cursor = ok ? 'pointer' : 'not-allowed'; }
+      });
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById('du-html-btn').addEventListener('click', () => {
+    if (!_du_q.length) return;
+    const mode = ov.querySelector('input[name="du-conv"]:checked').value;
+    const labelToId = {};
+    Object.entries(TOPIC_REGISTRY).forEach(([id, t]) => labelToId[t.label] = Number(id));
+    let nextId = Math.max(0, ...Object.keys(TOPIC_REGISTRY).map(Number)) + 1;
+    const tempTopics = Object.assign({}, TOPIC_REGISTRY);
+    Object.entries(_du_t).forEach(([label, cfg]) => {
+      if (!(label in labelToId)) { tempTopics[nextId] = { label, enabled: cfg.enabled }; labelToId[label] = nextId++; }
+    });
+    const resolved = _du_q.map(q => { const { _topicLabel, ...rest } = q; return { ...rest, topic: labelToId[_topicLabel] }; });
+    const bank = mode === 'csv-plus-existing' ? [...QUESTION_BANK, ...resolved] : resolved;
+    downloadFullBankAsHTML(tempTopics, bank);
+  });
+
+  document.getElementById('du-load-btn').addEventListener('click', () => {
+    if (!_du_q.length) return;
+    const mode = ov.querySelector('input[name="du-load"]:checked').value;
+    applyUploadedQuestions(_du_q, _du_t, mode);
+    ov.remove();
+  });
+
+  // ── tab 2 handlers ──
+  document.getElementById('di-json-btn').addEventListener('click', () => { downloadInterludeBankJSON(); ov.remove(); });
+
+  document.getElementById('di-preview-btn').addEventListener('click', () => {
+    ov.remove();
+    // Same logic as Shift+I keydown handler — Shift+I stays as live independent shortcut
+    const active = IL_BANK.map((_, i) => i).filter(i => interludeIsActive(IL_BANK[i]));
+    if (!active.length) { console.warn('[Mad MACs] No active interludes to preview.'); return; }
+    _previewILIdx = (_previewILIdx + 1) % active.length;
+    _runPreview(active[_previewILIdx], `Previewing interlude ${_previewILIdx + 1}/${active.length}:`);
+  });
+
+  // ── tab 3 handlers ──
+  document.getElementById('da-csv-btn').addEventListener('click', () => { downloadSpeciesBankCSV(); ov.remove(); });
+}
+
 document.addEventListener('keydown', e => {
-  if(!(e.shiftKey && (e.key === 'Y' || e.key === 'y'))) return;
-  if(state !== 'idle') return;
-  showDeepSimPicker();
+  if (!(e.shiftKey && (e.key === 'D' || e.key === 'd'))) return;
+  if (state !== 'idle') return;
+  showTeacherPanel(0);
 });
+
+// Shift+Q/U/L/S — aliases → Shift+D tabs (TODO: remove after Shift+D testing confirmed)
+document.addEventListener('keydown', e => {
+  if (!e.shiftKey || state !== 'idle') return;
+  if      (e.key === 'Q' || e.key === 'q') showTeacherPanel(0); // TODO: remove alias after Shift+D testing confirmed
+  else if (e.key === 'U' || e.key === 'u') showTeacherPanel(1); // TODO: remove alias after Shift+D testing confirmed
+  else if (e.key === 'L' || e.key === 'l') showTeacherPanel(2); // TODO: remove alias after Shift+D testing confirmed
+  else if (e.key === 'S' || e.key === 's') showTeacherPanel(3); // TODO: remove alias after Shift+D testing confirmed
+});
+
+// ── Shift+M — Student panel ───────────────────────────────────────────
+function showStudentPanel(startTab) {
+  startTab = startTab || 0;
+  const ov = _btsGetOrCreate('bts-student');
+  if (!ov) return;
+
+  const hdr  = _btsHeader('STUDENT TOOLS');
+  const TABS = ['MY SESSION', 'SIMULATIONS'];
+  const bar  = _btsTabBar(TABS, startTab);
+
+  const area = document.createElement('div');
+  area.style.cssText = 'flex:1;overflow-y:auto;padding:24px;';
+
+  // ── tab 0: MY SESSION ────────────────────────────────────────
+  const p0 = document.createElement('div');
+  p0.style.cssText = 'flex-direction:column;gap:16px;max-width:460px;margin:0 auto;';
+  const hasData = typeof sessionLog !== 'undefined' && sessionLog && sessionLog.length > 0;
+  p0.innerHTML = `
+    <div style="border:1px solid rgba(64,255,170,.15);border-radius:4px;
+      padding:14px 16px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-family:'Orbitron',monospace;font-size:.75rem;font-weight:700;
+        letter-spacing:2px;color:#40ffaa;">↓ SESSION REPORT</div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:1rem;color:#5abf8a;line-height:1.75;">
+        Downloads your session data as a CSV — levels played, AMR statistics,
+        host species, scores. Data is lost when a new game starts.
+      </div>
+      ${hasData
+        ? `<div style="font-family:'Exo 2',sans-serif;font-size:.82rem;color:#3a9a68;letter-spacing:.5px;">${sessionLog.length} level(s) recorded this session</div>`
+        : `<div style="font-family:'Exo 2',sans-serif;font-size:.82rem;color:#3a9a68;letter-spacing:.5px;">No session data yet — play a game first</div>`
+      }
+      <button id="ms-csv-btn" ${!hasData ? 'disabled' : ''} style="font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;letter-spacing:2px;border-radius:4px;padding:6px 20px;cursor:pointer;align-self:flex-start;transition:opacity .15s;border:2px solid #40ffaa;color:#030a14;background:#40ffaa;opacity:${hasData ? '1' : '.4'};cursor:${hasData ? 'pointer' : 'not-allowed'};">↓ CSV</button>
+    </div>
+  `;
+
+  // ── tab 1: SIMULATIONS ───────────────────────────────────────
+  const p1 = document.createElement('div');
+  p1.style.cssText = 'flex-direction:column;gap:16px;max-width:460px;margin:0 auto;';
+  p1.innerHTML = `
+    <div style="border:1px solid rgba(64,255,170,.15);border-radius:4px;
+      padding:14px 16px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:700;
+        letter-spacing:2px;color:#40ffaa;">HQ SIMULATION</div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:1rem;color:#5abf8a;line-height:1.75;">
+        Runs ${SIM_RUNS} Monte Carlo simulations per species — colour-coded Host Quality
+        matrix across all ${SIM_LEVELS} levels. Mean with min–max range.
+      </div>
+      <button id="ms-hqsim-btn" style="font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;letter-spacing:2px;border-radius:4px;padding:6px 20px;cursor:pointer;align-self:flex-start;transition:opacity .15s;border:2px solid #40ffaa;color:#030a14;background:#40ffaa;">▶ RUN HQ SIM</button>
+    </div>
+    <div style="border:1px solid rgba(64,255,170,.15);border-radius:4px;
+      padding:14px 16px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:700;
+        letter-spacing:2px;color:#40ffaa;">DEEP HQ SIMULATION</div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:1rem;color:#5abf8a;line-height:1.75;">
+        Seeded ${DEEP_SIM_INDS}-individual × ${DEEP_SIM_LEVELS}-level simulation per species.
+        Select species and download as XLSX, CSV, or PY chart script.
+      </div>
+      <button id="ms-deepsim-btn" style="font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;letter-spacing:2px;border-radius:4px;padding:6px 20px;cursor:pointer;align-self:flex-start;transition:opacity .15s;border:2px solid #40ffaa;color:#030a14;background:#40ffaa;">▶ OPEN PICKER</button>
+    </div>
+    <div style="border:1px solid rgba(64,255,170,.15);border-radius:4px;
+      padding:14px 16px;display:flex;flex-direction:column;gap:12px;">
+      <div style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:700;
+        letter-spacing:2px;color:#40ffaa;">MULTI-HOST × MULTI-PARASITE MATRIX</div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:1rem;color:#5abf8a;line-height:1.75;">
+        Colour-coded HQ matrix: all species × 5 microbe types, per exposure round.
+        Select one or more exposures — each renders as a separate panel.
+        Based on <a href="https://doi.org/10.1016/j.tree.2025.11.014" target="_blank"
+          style="color:#40ffaa;text-underline-offset:3px;">Mommer et al. (2026)</a>.
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;
+          font-family:'Exo 2',sans-serif;font-size:.95rem;color:#5abf8a;">
+          <input type="checkbox" id="mx-exp1" value="1" checked
+            style="accent-color:#40ffaa;width:14px;height:14px;flex-shrink:0;">
+          1st exposure
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;
+          font-family:'Exo 2',sans-serif;font-size:.95rem;color:#5abf8a;">
+          <input type="checkbox" id="mx-exp2" value="2"
+            style="accent-color:#40ffaa;width:14px;height:14px;flex-shrink:0;">
+          2nd exposure
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;
+          font-family:'Exo 2',sans-serif;font-size:.95rem;color:#5abf8a;">
+          <input type="checkbox" id="mx-exp3" value="3"
+            style="accent-color:#40ffaa;width:14px;height:14px;flex-shrink:0;">
+          3rd exposure
+        </label>
+      </div>
+      <div id="mx-warn" style="display:none;font-family:'Exo 2',sans-serif;
+        font-size:.88rem;color:#ff7799;">Select at least one exposure.</div>
+      <button id="ms-matrix-btn" style="font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;letter-spacing:2px;border-radius:4px;padding:6px 20px;cursor:pointer;align-self:flex-start;transition:opacity .15s;border:2px solid #40ffaa;color:#030a14;background:#40ffaa;">&#8595; DOWNLOAD MATRIX</button>
+    </div>
+  `;
+
+  [p0, p1].forEach((p, i) => {
+    p.style.display = i === startTab ? 'flex' : 'none';
+    area.appendChild(p);
+  });
+
+  ov.appendChild(hdr);
+  ov.appendChild(bar);
+  ov.appendChild(area);
+  document.body.appendChild(ov);
+
+  bar.addEventListener('click', e => {
+    const b = e.target.closest('button[data-ti]');
+    if (b) _btsActivate(bar, area, parseInt(b.dataset.ti));
+  });
+
+  hdr.querySelector('.bts-close-x').addEventListener('click', () => ov.remove());
+  const escM = e => { if (e.key === 'Escape') { ov.remove(); document.removeEventListener('keydown', escM); } };
+  document.addEventListener('keydown', escM);
+
+  // ── tab 0 handlers ──
+  const csvBtn = document.getElementById('ms-csv-btn');
+  if (csvBtn && hasData) csvBtn.addEventListener('click', () => { downloadSessionCSV(); ov.remove(); });
+
+  // ── tab 1 handlers ──
+  document.getElementById('ms-hqsim-btn').addEventListener('click', () => { ov.remove(); showHQSimOverlay(); });
+  document.getElementById('ms-deepsim-btn').addEventListener('click', () => { ov.remove(); showDeepSimPicker(); });
+  document.getElementById('ms-matrix-btn').addEventListener('click', () => {
+    const selected = [1,2,3].filter(n => document.getElementById(`mx-exp${n}`).checked);
+    if (!selected.length) {
+      document.getElementById('mx-warn').style.display = 'block'; return;
+    }
+    document.getElementById('mx-warn').style.display = 'none';
+    ov.remove();
+    buildAndShowHQMatrix(selected);
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (!(e.shiftKey && (e.key === 'M' || e.key === 'm'))) return;
+  if (state !== 'idle' && state !== 'over') return;
+  showStudentPanel(0);
+});
+
+// Shift+R/H/Y — aliases → Shift+M tabs (TODO: remove after Shift+M testing confirmed)
+document.addEventListener('keydown', e => {
+  if (!e.shiftKey) return;
+  if (state !== 'idle' && state !== 'over') return;
+  if      (e.key === 'R' || e.key === 'r') showStudentPanel(0); // TODO: remove alias after Shift+M testing confirmed
+  else if (e.key === 'H' || e.key === 'h') showStudentPanel(1); // TODO: remove alias after Shift+M testing confirmed
+  else if (e.key === 'Y' || e.key === 'y') showStudentPanel(1); // TODO: remove alias after Shift+M testing confirmed
+});
+
+// ─── Multi-host × multi-parasite HQ matrix ───────────────────
+// Builds a standalone HTML page (new tab) showing one panel per selected
+// exposure (1st / 2nd / 3rd). Each panel = all enabled species × M1–M5.
+// Cell value = mean HQ across SIM_RUNS Monte Carlo runs.
+// Includes a canvas-based JPEG export (no external dependencies).
+// Citation: Mommer et al. (2026) doi.org/10.1016/j.tree.2025.11.014
+
+function buildAndShowHQMatrix(exposures) {
+  // ── 1. Simulation ──────────────────────────────────────────
+  function simSessionMatrix(sp, base) {
+    const mem = {};
+    const rows = [];
+    for (let lvl = 1; lvl <= 15; lvl++) {
+      const mt = ((lvl - 1) % 5) + 1;
+      const jitterMult = (lvl >= 5 && lvl <= 10) ? 1.75 : 1.0;
+      const jitter = (Math.random() - 0.5) * 2 * sp.jitter * jitterMult;
+      let q = base + jitter;
+      q = Math.max(sp.baseMin, Math.min(sp.baseMax, q));
+      if (mt === 5) q = Math.min(10, q + sp.m5Hit);
+      if (mem.hasOwnProperty(mt)) {
+        const dec = (sp.specialistMicrobe === mt) ? sp.memoryDecSpecialist : sp.memoryDec;
+        q = Math.max(0, Math.min(mem[mt], q) + dec);
+      }
+      if (sp.specialistMicrobe !== null && mt === sp.specialistMicrobe)
+        q = Math.max(0, Math.min(10, q + sp.specialistMod));
+      mem[mt] = q;
+      rows.push({ lvl, mt, exposure: Math.ceil(lvl / 5), hq: q });
+    }
+    return rows;
+  }
+
+  function rollBase(sp) {
+    const raw = sp.baseMin + Math.random() * (sp.baseMax - sp.baseMin) + (Math.random() - 0.5);
+    return Math.max(sp.baseMin, Math.min(sp.baseMax, raw));
+  }
+
+  const enabledSpecies = HOST_SPECIES_BANK.filter(sp => sp.enabled !== false);
+
+  const speciesData = enabledSpecies.map(sp => {
+    const sums = { 1: {}, 2: {}, 3: {} };
+    const counts = { 1: {}, 2: {}, 3: {} };
+    for (let r = 0; r < SIM_RUNS; r++) {
+      simSessionMatrix(sp, rollBase(sp)).forEach(({ exposure, mt, hq }) => {
+        sums[exposure][mt]   = (sums[exposure][mt]   || 0) + hq;
+        counts[exposure][mt] = (counts[exposure][mt] || 0) + 1;
+      });
+    }
+    const means = {};
+    [1, 2, 3].forEach(exp => {
+      means[exp] = {};
+      [1, 2, 3, 4, 5].forEach(mt => {
+        means[exp][mt] = sums[exp][mt]
+          ? parseFloat((sums[exp][mt] / counts[exp][mt]).toFixed(1)) : 0;
+      });
+    });
+    return { sp, means };
+  });
+
+  // ── 2. Colour helper ─────────────────────────────────────────
+  function hqColor(v) {
+    if (v <= 2)  return { bg: '#0a3020', fg: '#40ffaa' };
+    if (v <= 3)  return { bg: '#0d3a24', fg: '#40ffaa' };
+    if (v <= 4)  return { bg: '#1a4a1a', fg: '#7aff7a' };
+    if (v <= 5)  return { bg: '#2a3a10', fg: '#c8ff40' };
+    if (v <= 6)  return { bg: '#3a2e08', fg: '#ffdd44' };
+    if (v <= 7)  return { bg: '#3a2008', fg: '#ffaa22' };
+    if (v <= 8)  return { bg: '#3a1008', fg: '#ff7722' };
+    if (v <= 9)  return { bg: '#3a0808', fg: '#ff4444' };
+    return        { bg: '#2a0408', fg: '#ff2266' };
+  }
+
+  const EXP_LABELS    = { 1: '1st Exposure', 2: '2nd Exposure', 3: '3rd Exposure' };
+  const EXP_SUBLAB    = { 1: 'Levels 1–5',  2: 'Levels 6–10',  3: 'Levels 11–15' };
+  const MT_LABELS     = ['M1', 'M2', 'M3', 'M4', 'M5'];
+  const dateStr       = new Date().toISOString().slice(0, 10);
+  const nSp           = enabledSpecies.length;
+  const expLabel      = exposures.map(n => EXP_LABELS[n]).join(' · ');
+
+  // ── 3. Build panel HTML (string concat, no template literal nesting) ──
+  function buildPanel(expNum) {
+    const parts = [];
+    parts.push('<div class="panel" data-exp="' + expNum + '" style="margin-bottom:40px;">');
+    parts.push('<div style="margin-bottom:10px;">');
+    parts.push('<span style="font-family:\'Courier New\',monospace;font-size:1rem;font-weight:700;color:#40ffaa;letter-spacing:2px;">' + EXP_LABELS[expNum] + '</span>');
+    parts.push('<span style="font-family:\'Exo 2\',sans-serif;font-size:.78rem;color:#2a7a50;margin-left:10px;">' + EXP_SUBLAB[expNum] + '</span>');
+    parts.push('</div>');
+    parts.push('<table style="border-collapse:collapse;width:100%;background:#030a14;border:1px solid rgba(64,255,170,.15);">');
+    parts.push('<thead><tr>');
+    parts.push('<th style="padding:6px 10px;text-align:left;font-family:\'Exo 2\',sans-serif;font-size:.72rem;color:#2a7a50;border-bottom:1px solid rgba(64,255,170,.2);">Host species</th>');
+    parts.push('<th style="padding:6px 8px;text-align:left;font-family:\'Exo 2\',sans-serif;font-size:.72rem;color:#2a7a50;border-bottom:1px solid rgba(64,255,170,.2);font-style:italic;">Latin name</th>');
+    MT_LABELS.forEach(function(lbl) {
+      parts.push('<th style="padding:6px 8px;text-align:center;font-family:\'Courier New\',monospace;font-size:.72rem;color:#2a7a50;border-bottom:1px solid rgba(64,255,170,.2);">' + lbl + '</th>');
+    });
+    parts.push('</tr></thead><tbody>');
+    speciesData.forEach(function(d) {
+      parts.push('<tr>');
+      parts.push('<td style="padding:5px 10px;font-family:\'Exo 2\',sans-serif;font-size:.78rem;color:#40ffaa;white-space:nowrap;border-bottom:1px solid rgba(64,255,170,.06);">' + d.sp.commonName + '</td>');
+      parts.push('<td style="padding:5px 8px;font-family:\'Exo 2\',sans-serif;font-size:.68rem;color:#2a7a50;white-space:nowrap;border-bottom:1px solid rgba(64,255,170,.06);font-style:italic;">' + d.sp.latinName + '</td>');
+      [1,2,3,4,5].forEach(function(mt) {
+        const v = d.means[expNum][mt];
+        const col = hqColor(v);
+        parts.push('<td style="padding:5px 8px;text-align:center;background:' + col.bg + ';font-size:.8rem;font-weight:700;color:' + col.fg + ';font-family:\'Courier New\',monospace;border:1px solid rgba(0,0,0,.3);">' + v.toFixed(1) + '</td>');
+      });
+      parts.push('</tr>');
+    });
+    parts.push('</tbody></table></div>');
+    return parts.join('');
+  }
+
+  const panelsHTML = exposures.map(buildPanel).join('');
+
+  // ── 4. Legend ─────────────────────────────────────────────────
+  const legendDefs = [
+    { range: '0–2', bg: '#0a3020', fg: '#40ffaa' },
+    { range: '3–4', bg: '#1a4a1a', fg: '#7aff7a' },
+    { range: '5',   bg: '#2a3a10', fg: '#c8ff40' },
+    { range: '6',   bg: '#3a2e08', fg: '#ffdd44' },
+    { range: '7–8', bg: '#3a1008', fg: '#ff7722' },
+    { range: '9–10',bg: '#2a0408', fg: '#ff2266' },
+  ];
+  const legendHTML = legendDefs.map(function(l) {
+    return '<span style="display:inline-flex;align-items:center;gap:5px;margin-right:12px;">'
+      + '<span style="display:inline-block;width:22px;height:16px;background:' + l.bg + ';border:1px solid rgba(255,255,255,.1);border-radius:2px;"></span>'
+      + '<span style="font-family:\'Exo 2\',sans-serif;font-size:.78rem;color:#4a9970;">' + l.range + '</span>'
+      + '</span>';
+  }).join('');
+
+  // ── 5. Canvas JPEG export (inline script, no template literal) ──
+  const matrixJSON = JSON.stringify(speciesData.map(function(d) {
+    return { sp: { commonName: d.sp.commonName, latinName: d.sp.latinName }, means: d.means };
+  }));
+
+  const exportFn = [
+    'function exportJPEG() {',
+    '  var panels = document.querySelectorAll(".panel");',
+    '  var PAD=32,GAP=28,TITLE_H=80,LEGEND_H=44,FOOTER_H=36;',
+    '  var CELL_W=56,CELL_H=30,LABEL_W=170,LATIN_W=140;',
+    '  var ROW_H=CELL_H,HEADER_ROW_H=34;',
+    '  var COL_W=LABEL_W+LATIN_W+5*CELL_W;',
+    '  var speciesCount=' + nSp + ';',
+    '  var panelH=HEADER_ROW_H+speciesCount*ROW_H;',
+    '  var totalH=TITLE_H+panels.length*(panelH+GAP+28)+LEGEND_H+FOOTER_H+PAD*2;',
+    '  var totalW=PAD*2+COL_W;',
+    '  var cv=document.createElement("canvas");',
+    '  cv.width=totalW; cv.height=totalH;',
+    '  var ctx=cv.getContext("2d");',
+    '  ctx.fillStyle="#030a14"; ctx.fillRect(0,0,totalW,totalH);',
+    '  function hqC(v){',
+    '    if(v<=2) return{bg:"#0a3020",fg:"#40ffaa"};',
+    '    if(v<=3) return{bg:"#0d3a24",fg:"#40ffaa"};',
+    '    if(v<=4) return{bg:"#1a4a1a",fg:"#7aff7a"};',
+    '    if(v<=5) return{bg:"#2a3a10",fg:"#c8ff40"};',
+    '    if(v<=6) return{bg:"#3a2e08",fg:"#ffdd44"};',
+    '    if(v<=7) return{bg:"#3a2008",fg:"#ffaa22"};',
+    '    if(v<=8) return{bg:"#3a1008",fg:"#ff7722"};',
+    '    if(v<=9) return{bg:"#3a0808",fg:"#ff4444"};',
+    '    return{bg:"#2a0408",fg:"#ff2266"};',
+    '  }',
+    '  var data=window._matrixData;',
+    '  var ML=["M1","M2","M3","M4","M5"];',
+    '  var EL={1:"1st Exposure (Levels 1-5)",2:"2nd Exposure (Levels 6-10)",3:"3rd Exposure (Levels 11-15)"};',
+    '  var y=PAD;',
+    '  ctx.font="bold 15px monospace"; ctx.fillStyle="#40ffaa";',
+    '  ctx.fillText("MULTI-HOST x MULTI-PARASITE MATRIX",PAD,y+20);',
+    '  ctx.font="12px sans-serif"; ctx.fillStyle="#2a7a50";',
+    '  ctx.fillText("Mad MACs  |  Mommer et al. (2026)  |  doi.org/10.1016/j.tree.2025.11.014",PAD,y+40);',
+    '  ctx.fillStyle="#1a5a40";',
+    '  ctx.fillText("' + dateStr + '  |  ' + nSp + ' species  |  ' + SIM_RUNS + ' Monte Carlo runs",PAD,y+58);',
+    '  y+=TITLE_H;',
+    '  panels.forEach(function(panel){',
+    '    var expNum=parseInt(panel.dataset.exp);',
+    '    ctx.font="bold 13px monospace"; ctx.fillStyle="#40ffaa";',
+    '    ctx.fillText(EL[expNum],PAD,y+16); y+=28;',
+    '    ctx.font="bold 11px monospace"; ctx.fillStyle="#2a7a50";',
+    '    ctx.fillText("Host species",PAD+4,y+20);',
+    '    ctx.fillText("Latin name",PAD+LABEL_W+4,y+20);',
+    '    ML.forEach(function(lbl,i){ctx.fillText(lbl,PAD+LABEL_W+LATIN_W+i*CELL_W+CELL_W/2-10,y+20);});',
+    '    y+=HEADER_ROW_H;',
+    '    data.forEach(function(d){',
+    '      ctx.font="11px sans-serif"; ctx.fillStyle="#40ffaa";',
+    '      ctx.fillText(d.sp.commonName.slice(0,24),PAD+4,y+20);',
+    '      ctx.font="italic 10px sans-serif"; ctx.fillStyle="#2a7a50";',
+    '      ctx.fillText(d.sp.latinName.slice(0,22),PAD+LABEL_W+4,y+20);',
+    '      [1,2,3,4,5].forEach(function(mt,i){',
+    '        var v=d.means[expNum][mt];',
+    '        var c=hqC(v);',
+    '        var cx=PAD+LABEL_W+LATIN_W+i*CELL_W;',
+    '        ctx.fillStyle=c.bg; ctx.fillRect(cx,y+2,CELL_W-2,CELL_H-4);',
+    '        ctx.font="bold 11px monospace"; ctx.fillStyle=c.fg;',
+    '        ctx.fillText(v.toFixed(1),cx+CELL_W/2-10,y+19);',
+    '      });',
+    '      y+=ROW_H;',
+    '    });',
+    '    y+=GAP;',
+    '  });',
+    '  var ld=[{r:"0-2",bg:"#0a3020"},{r:"3-4",bg:"#1a4a1a"},{r:"5",bg:"#2a3a10"},{r:"6",bg:"#3a2e08"},{r:"7-8",bg:"#3a1008"},{r:"9-10",bg:"#2a0408"}];',
+    '  ctx.font="10px sans-serif"; ctx.fillStyle="#2a7a50"; ctx.fillText("HQ scale:",PAD,y+14);',
+    '  var lx=PAD+62;',
+    '  ld.forEach(function(l){ctx.fillStyle=l.bg;ctx.fillRect(lx,y+4,18,14);ctx.fillStyle="#4a9970";ctx.fillText(l.r,lx+22,y+15);lx+=62;});',
+    '  y+=LEGEND_H;',
+    '  ctx.font="10px sans-serif"; ctx.fillStyle="#1a5a40";',
+    '  ctx.fillText("Mommer et al. (2026)  doi.org/10.1016/j.tree.2025.11.014",PAD,y+14);',
+    '  cv.toBlob(function(blob){',
+    '    var a=document.createElement("a");',
+    '    a.href=URL.createObjectURL(blob);',
+    '    a.download="madmacs_hq_matrix_' + dateStr + '.jpg";',
+    '    a.click();',
+    '  },"image/jpeg",0.93);',
+    '}',
+  ].join('\n');
+
+  // ── 6. Assemble full HTML page via array join ─────────────────
+  const parts = [];
+  parts.push('<!DOCTYPE html>');
+  parts.push('<html lang="en"><head>');
+  parts.push('<meta charset="UTF-8">');
+  parts.push('<meta name="viewport" content="width=device-width,initial-scale=1">');
+  parts.push('<title>Multi-Host x Multi-Parasite Matrix - Mad MACs</title>');
+  parts.push('<link rel="preconnect" href="https://fonts.googleapis.com">');
+  parts.push('<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">');
+  parts.push('<style>');
+  parts.push('*{box-sizing:border-box;margin:0;padding:0;}');
+  parts.push('body{background:#030a14;color:#40ffaa;font-family:"Exo 2",sans-serif;padding:32px 40px 56px;min-height:100vh;}');
+  parts.push('h1{font-family:"Orbitron",monospace;font-size:1.1rem;font-weight:900;letter-spacing:3px;color:#40ffaa;margin-bottom:6px;}');
+  parts.push('.meta{font-size:.82rem;color:#2a7a50;margin-bottom:4px;line-height:1.6;}');
+  parts.push('.meta a{color:#40ffaa;text-underline-offset:3px;}');
+  parts.push('.toolbar{display:flex;align-items:center;gap:12px;margin:20px 0 32px;flex-wrap:wrap;}');
+  parts.push('.btn{font-family:"Orbitron",monospace;font-size:.7rem;font-weight:700;letter-spacing:2px;border-radius:4px;padding:7px 20px;cursor:pointer;border:2px solid #40ffaa;color:#030a14;background:#40ffaa;transition:opacity .15s;}');
+  parts.push('.btn:hover{opacity:.85;}');
+  parts.push('.legend{display:flex;align-items:center;flex-wrap:wrap;gap:4px;}');
+  parts.push('.legend-label{font-size:.78rem;color:#2a7a50;margin-right:6px;}');
+  parts.push('</style></head><body>');
+  parts.push('<h1>MULTI-HOST \u00d7 MULTI-PARASITE MATRIX</h1>');
+  parts.push('<div class="meta">Mad MACs &nbsp;&middot;&nbsp; ' + expLabel + ' &nbsp;&middot;&nbsp; ' + nSp + ' species &nbsp;&middot;&nbsp; ' + SIM_RUNS + ' Monte Carlo runs &nbsp;&middot;&nbsp; ' + dateStr + '</div>');
+  parts.push('<div class="meta"><a href="https://doi.org/10.1016/j.tree.2025.11.014" target="_blank">Mommer et al. (2026)</a> &nbsp;&middot;&nbsp; doi.org/10.1016/j.tree.2025.11.014</div>');
+  parts.push('<div class="toolbar"><button class="btn" onclick="exportJPEG()">&#8595; JPEG</button>');
+  parts.push('<div class="legend"><span class="legend-label">HQ scale:</span>' + legendHTML + '</div></div>');
+  parts.push(panelsHTML);
+  parts.push('<div style="margin-top:32px;font-size:.75rem;color:#1a5a40;line-height:1.8;">');
+  parts.push('Cells show mean Host Quality (HQ) across ' + SIM_RUNS + ' Monte Carlo runs per species.<br>');
+  parts.push('HQ 0 = sterilising immunity &nbsp;&middot;&nbsp; HQ 10 = full susceptibility.<br>');
+  parts.push('<a href="https://doi.org/10.1016/j.tree.2025.11.014" target="_blank" style="color:#2a7a50;">Mommer et al. (2026) &mdash; doi.org/10.1016/j.tree.2025.11.014</a>');
+  parts.push('</div>');
+  parts.push('<script>' + exportFn + '<\/script>');
+  parts.push('<script>window._matrixData=' + matrixJSON + ';<\/script>');
+  parts.push('</body></html>');
+
+  const html = parts.join('\n');
+
+  // Always download as HTML file — reliable across all contexts
+  const blob = new Blob([html], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'madmacs_hq_matrix_' + dateStr + '.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
+  console.log('[Mad MACs] HQ matrix downloaded — ' + nSp + ' species x ' + exposures.length + ' exposure panel(s).');
+}
 
 // ─── SheetJS lazy loader ──────────────────────────────────────
 // Uses xlsx-js-style (drop-in SheetJS fork with full cell styling support)
