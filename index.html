@@ -8,11 +8,11 @@
 <meta name="theme-color" content="#030810">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<title>Immuno-Man 🦠</title>
+<title>Mad MACs 🦠</title>
 <meta name="author" content="Kevin D. Matson">
-<meta name="description" content="Immuno-Man: an educational arcade game with quiz features">
+<meta name="description" content="MAD MACs is a vintage-style educational arcade game featuring quiz elements and animated interludes that link to background sources.">
 <meta name="license" content="CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0/">
-<meta name="version" content="AMR step 6 v7">
+<meta name="version" content="AMR step 6 v7 — Mad MACs rename + sim parity 20260313">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;600&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -470,7 +470,7 @@
 <div id="game-root">
 <div class="title-row">
   <canvas id="igg-left" class="ui" width="56" height="72"></canvas>
-  <h1>IMMUNO-MAN</h1>
+  <h1>MAD MACs</h1>
   <canvas id="igg-right" class="ui" width="56" height="72"></canvas>
 </div>
 <p class="tag">Get your pseudopodia ready!<br>And make a run for your life!</p>
@@ -532,7 +532,7 @@
   <canvas id="game-canvas"></canvas>
   <div id="ov">
     <canvas id="icon-canvas" class="ui" width="130" height="130"></canvas>
-    <h2>IMMUNO-MAN</h2>
+    <h2>MAD MACs</h2>
     <p style="border-left:2px solid rgba(64,255,170,0.35);padding-left:10px;">You are a macrophage.<br>
        Devour all microbes to advance.<br>
        Viruses hunt you — grab antibodies to fight back.<br>
@@ -653,11 +653,13 @@
       <button onclick="hideAbout()" style="background:none;border:none;color:#2a5540;font-size:1.1rem;cursor:pointer;padding:0 4px;line-height:1;" title="Close">✕</button>
     </div>
     <div style="padding:22px 24px;display:flex;flex-direction:column;gap:14px;">
-      <div style="text-align:center;">
-        <div style="font-family:'Orbitron',monospace;font-size:1rem;letter-spacing:3px;color:#40ffaa;text-shadow:0 0 12px #40ffaa;">IMMUNO-MAN</div>
+      <div style="text-align:center;display:flex;flex-direction:column;gap:4px;">
+        <div style="font-family:'Orbitron',monospace;font-size:1rem;letter-spacing:3px;color:#40ffaa;text-shadow:0 0 12px #40ffaa;">MAD MACs</div>
+        <!-- BTS_LABEL: "Behind the Spleens" subtitle — also used as Shift+D panel title -->
+        <div style="font-family:'Exo 2',sans-serif;font-size:.75rem;font-style:italic;color:#2a7a50;letter-spacing:1px;">Behind the Spleens</div>
       </div>
       <div style="font-size:.78rem;color:#4a9970;line-height:1.6;">
-        An educational arcade game with quiz features.
+        MAD MACs is a vintage-style educational arcade game featuring quiz elements and animated interludes that link to background sources.
       </div>
       <div style="font-size:.72rem;color:#4a7060;line-height:1.7;border-top:1px solid rgba(64,255,170,.08);padding-top:12px;">
         <div style="color:#40ffaa;font-family:'Orbitron',monospace;font-size:.55rem;letter-spacing:2px;margin-bottom:6px;">CREDITS</div>
@@ -1784,7 +1786,7 @@ function buildShuffledDeck(){
   if(active.length === 0){
     // Should not reach here — callers guard against empty banks via showNoQuestionsPopup.
     // Fallback to index 0 prevents a crash if called unexpectedly.
-    console.warn('[Immuno-Man] No active questions found — check TOPIC_REGISTRY and question enabled flags. Falling back to question 0.');
+    console.warn('[Mad MACs] No active questions found — check TOPIC_REGISTRY and question enabled flags. Falling back to question 0.');
     return [0];
   }
   for(let i = active.length - 1; i > 0; i--){
@@ -2596,6 +2598,8 @@ const BASE = [
 // Tunnel: row 8, cols 0-2 and 18-20.
 
 // ─── Highscores ──────────────────────────────────────────────
+// NOTE: localStorage key intentionally kept as 'immunoman_hs' during rename to Mad MACs.
+// Changing it would silently wipe all existing high scores. Migrate deliberately when ready.
 function loadHS(){ try{ return JSON.parse(localStorage.getItem('immunoman_hs')||'[]'); }catch(e){ return []; } }
 function saveHS(hs){ try{ localStorage.setItem('immunoman_hs', JSON.stringify(hs)); }catch(e){} }
 function addScore(name, sc, qsc){
@@ -2671,7 +2675,7 @@ let pillCurrentSlot=-1;  // index of slot whose pill is on screen (-1=none)
 let pillGeneration=0;    // incremented each eatPill(); setTimeout callbacks check staleness
 
 // ─── Bacterial Growth State ───────────────────────────────────
-let hostQuality=5;        // 0–10, per-level (session base + level trend + jitter)
+let hostQuality=5;        // 0–10, per-level (session base + jitter + memory + specialist mod)
 let sessionHostBase=2;    // rolled once per session from species range
 let parasiteQuality=0;    // 0–10, per-level (level trend + small jitter)
 
@@ -2850,10 +2854,10 @@ function rollHostQuality(){
   const microbeType = ((level - 1) % 5) + 1;
 
   // Step 4 — Jitter (wider at levels 5–10 for more mid-game variation)
-  // At level 1 (session start) jitter from sessionHostBase; thereafter from current hostQuality.
+  // Always anchored to sessionHostBase — each level rolls independently from species base.
   const jitterMult = (level >= 5 && level <= 10) ? 1.75 : 1.0;
   const jitter = (Math.random() - 0.5) * 2 * sp.jitter * jitterMult;
-  let hq = (level === 1 ? sessionHostBase : hostQuality) + jitter;
+  let hq = sessionHostBase + jitter; // base-anchored: each level rolls independently from species base, not prior level's outcome
 
   // Step 5 — Clamp to species range (specialist and memory can still break through)
   hq = Math.max(sp.baseMin, Math.min(sp.baseMax, hq));
@@ -3605,7 +3609,7 @@ function returnToStart(){
   ov.style.display='flex';
   ov.innerHTML=`
     <canvas id="icon-canvas" class="ui" width="130" height="130"></canvas>
-    <h2>IMMUNO-MAN</h2>
+    <h2>MAD MACs</h2>
     <p style="border-left:2px solid rgba(64,255,170,0.35);padding-left:10px;">You are a macrophage.<br>
        Devour all microbes to advance.<br>
        Viruses hunt you — grab antibodies to fight back.<br>
@@ -4963,10 +4967,10 @@ let _previewILIdx = -1;
 // bypassing showInterlude()'s random-pick and repeat-avoidance logic entirely.
 function _runPreview(idx, label){
   if(idx < 0 || idx >= IL_BANK.length){
-    console.warn(`[Immuno-Man] IL_BANK index ${idx} out of range (0–${IL_BANK.length-1}).`);
+    console.warn(`[Mad MACs] IL_BANK index ${idx} out of range (0–${IL_BANK.length-1}).`);
     return;
   }
-  console.log(`[Immuno-Man] ${label} IL_BANK[${idx}] — "${IL_BANK[idx].title}"`);
+  console.log(`[Mad MACs] ${label} IL_BANK[${idx}] — "${IL_BANK[idx].title}"`);
   ilInit();
   ilOnDone = null; // no follow-on action after preview
   ilLastIdx = idx;
@@ -5013,7 +5017,7 @@ document.addEventListener('keydown', e => {
   if(!(e.shiftKey && (e.key === 'I' || e.key === 'i'))) return;
   if(state !== 'idle') return;
   const active = IL_BANK.map((_,i) => i).filter(i => interludeIsActive(IL_BANK[i]));
-  if(!active.length){ console.warn('[Immuno-Man] No active interludes to preview.'); return; }
+  if(!active.length){ console.warn('[Mad MACs] No active interludes to preview.'); return; }
   _previewILIdx = (_previewILIdx + 1) % active.length;
   const idx = active[_previewILIdx];
   _runPreview(idx, `Previewing interlude ${_previewILIdx + 1}/${active.length}:`);
@@ -5034,7 +5038,7 @@ function buildSessionCSV(){
 
   // Metadata header (# lines are ignored by most spreadsheet imports)
   const meta = [
-    '# IMMUNO-MAN SESSION REPORT',
+    '# MAD MACs SESSION REPORT',
     `# Date,${dateStr}`,
     `# Individual,${sessionHostName || 'unknown'}`,
     `# Species,${sp ? sp.commonName : 'unknown'}`,
@@ -5074,14 +5078,14 @@ function buildSessionCSV(){
 function downloadSessionCSV(){
   if(state === 'idle'){ return; }
   if(sessionLog.length === 0){
-    console.warn('[Immuno-Man] Shift+R: no levels completed yet — nothing to export.');
+    console.warn('[Mad MACs] Shift+R: no levels completed yet — nothing to export.');
     return;
   }
   const csv    = buildSessionCSV();
   const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
   const nameTag = (sessionHostName || 'unknown').toLowerCase();
-  triggerDownload(`immunoman_${nameTag}_${dateTag}.csv`, csv, 'text/csv');
-  console.log(`[Immuno-Man] Session report downloaded — ${sessionLog.length} level(s).`);
+  triggerDownload(`madmacs_${nameTag}_${dateTag}.csv`, csv, 'text/csv');
+  console.log(`[Mad MACs] Session report downloaded — ${sessionLog.length} level(s).`);
 }
 
 // ─── Ctrl+R / refresh guard ───────────────────────────────────
@@ -5129,8 +5133,8 @@ function downloadQuestionBankCSV(){
     ].join(',');
   }).join('\n');
   const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
-  triggerDownload(`immunoman_questions_${dateTag}.csv`, cols+'\n'+rows, 'text/csv');
-  console.log(`[Immuno-Man] Question bank exported — ${QUESTION_BANK.length} question(s).`);
+  triggerDownload(`madmacs_questions_${dateTag}.csv`, cols+'\n'+rows, 'text/csv');
+  console.log(`[Mad MACs] Question bank exported — ${QUESTION_BANK.length} question(s).`);
 }
 
 function showExportOverlay(){
@@ -5593,7 +5597,7 @@ function applyUploadedQuestions(questions, topicMap, mode){
   }
 
   const modeLabel = mode === 'replace' ? 'replaced' : 'merged';
-  console.log(`[Immuno-Man] Question bank ${modeLabel} — ${QUESTION_BANK.length} total question(s).`);
+  console.log(`[Mad MACs] Question bank ${modeLabel} — ${QUESTION_BANK.length} total question(s).`);
 }
 
 document.addEventListener('keydown', e => {
@@ -5613,11 +5617,11 @@ function downloadFullBankAsHTML(topicRegistry, questionBank){
   const lines = [];
 
   lines.push('// ╔══════════════════════════════════════════════════════════════════╗');
-  lines.push('// ║  Immuno-Man — paste-ready question bank snippet                  ║');
+  lines.push('// ║  Mad MACs — paste-ready question bank snippet                  ║');
   lines.push(`// ║  Generated: ${new Date().toISOString().slice(0,16).replace('T',' ')}                                   ║`);
   lines.push('// ║                                                                  ║');
   lines.push('// ║  HOW TO USE:                                                     ║');
-  lines.push('// ║  1. Open immunoman.html in a text editor                         ║');
+  lines.push('// ║  1. Open madmacs.html in a text editor                         ║');
   lines.push('// ║  2. Find "const TOPIC_REGISTRY = {" — select from that line      ║');
   lines.push('// ║     all the way to the closing "};" of QUESTION_BANK             ║');
   lines.push('// ║  3. Paste this entire file over that selection                   ║');
@@ -5653,8 +5657,8 @@ function downloadFullBankAsHTML(topicRegistry, questionBank){
   lines.push('];');
 
   const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
-  triggerDownload(`immunoman_questions_snippet_${dateTag}.txt`, lines.join('\n'), 'text/plain');
-  console.log(`[Immuno-Man] HTML snippet exported — ${questionBank.length} question(s).`);
+  triggerDownload(`madmacs_questions_snippet_${dateTag}.txt`, lines.join('\n'), 'text/plain');
+  console.log(`[Mad MACs] HTML snippet exported — ${questionBank.length} question(s).`);
 }
 
 // ─── Shift+S — Species Bank CSV Export ───────────────────────
@@ -5677,8 +5681,8 @@ function downloadSpeciesBankCSV(){
     esc(sp.tagline), esc(sp.scientificHook||''),
   ].join(',')).join('\n');
   const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
-  triggerDownload(`immunoman_species_${dateTag}.csv`, cols+'\n'+rows, 'text/csv');
-  console.log(`[Immuno-Man] Species bank exported — ${HOST_SPECIES_BANK.length} species.`);
+  triggerDownload(`madmacs_species_${dateTag}.csv`, cols+'\n'+rows, 'text/csv');
+  console.log(`[Mad MACs] Species bank exported — ${HOST_SPECIES_BANK.length} species.`);
 }
 document.addEventListener('keydown', e => {
   if(!(e.shiftKey && (e.key === 'S' || e.key === 's'))) return;
@@ -5691,8 +5695,8 @@ document.addEventListener('keydown', e => {
 function downloadInterludeBankJSON(){
   const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
   const json = JSON.stringify(IL_BANK, null, 2);
-  triggerDownload(`immunoman_interludes_${dateTag}.json`, json, 'application/json');
-  console.log(`[Immuno-Man] Interlude bank exported — ${IL_BANK.length} entry/entries.`);
+  triggerDownload(`madmacs_interludes_${dateTag}.json`, json, 'application/json');
+  console.log(`[Mad MACs] Interlude bank exported — ${IL_BANK.length} entry/entries.`);
 }
 document.addEventListener('keydown', e => {
   if(!(e.shiftKey && (e.key === 'L' || e.key === 'l'))) return;
@@ -5720,7 +5724,7 @@ function runHQSimulation(){
       const mt = ((lvl - 1) % 5) + 1;
       const jitterMult = (lvl >= 5 && lvl <= 10) ? 1.75 : 1.0;
       const jitter = (Math.random() - 0.5) * 2 * sp.jitter * jitterMult;
-      let q = (lvl === 1 ? base : hq) + jitter;
+      let q = base + jitter; // base-anchored: each level rolls independently from sessionHostBase
       q = Math.max(sp.baseMin, Math.min(sp.baseMax, q));
       if(mt === 5) q = Math.min(10, q + sp.m5Hit);
       if(mem.hasOwnProperty(mt)){
@@ -5863,11 +5867,11 @@ function showHQSimOverlay(){
   document.getElementById('hq-sim-close').addEventListener('click', () => overlay.remove());
   document.getElementById('hq-sim-csv').addEventListener('click', () => {
     const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
-    triggerDownload(`immunoman_hqsim_${dateTag}.csv`, buildSimCSV(results), 'text/csv');
+    triggerDownload(`madmacs_hqsim_${dateTag}.csv`, buildSimCSV(results), 'text/csv');
   });
   document.getElementById('hq-sim-xlsx').addEventListener('click', () => {
     const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
-    loadSheetJS(() => buildSimXLSX(results, `immunoman_hqsim_${dateTag}.xlsx`));
+    loadSheetJS(() => buildSimXLSX(results, `madmacs_hqsim_${dateTag}.xlsx`));
   });
 }
 
@@ -5910,7 +5914,7 @@ function runDeepSimSession(sp, seed){
     const mt = ((lvl-1) % 5) + 1;
     const jitterMult = (lvl >= 5 && lvl <= 10) ? 1.75 : 1.0;
     const jitter = (rng()-0.5) * 2 * sp.jitter * jitterMult;
-    let q = (lvl === 1 ? base : hq) + jitter;
+    let q = base + jitter; // base-anchored: each level rolls independently from sessionHostBase
     q = Math.max(sp.baseMin, Math.min(sp.baseMax, q));
     if(mt === 5) q = Math.min(10, q + sp.m5Hit);
     if(mem.hasOwnProperty(mt)){
@@ -5996,7 +6000,7 @@ function buildSimXLSX(results, filename){
   XLSX.utils.book_append_sheet(wb, ws, 'HQ Summary');
 
   XLSX.writeFile(wb, filename);
-  console.log(`[Immuno-Man] HQ sim XLSX exported — ${results.length} species.`);
+  console.log(`[Mad MACs] HQ sim XLSX exported — ${results.length} species.`);
 }
 
 // ─── Shift+Y — Deep HQ Simulation picker (checkbox UI) ───────
@@ -6084,20 +6088,20 @@ function showDeepSimPicker(){
     if(!sel.length){ alert('Select at least one species.'); return; }
     const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
     const tag = sel.length===1 ? sel[0].commonName.toLowerCase().replace(/\s+/g,'-') : 'selected';
-    loadSheetJS(() => buildDeepSimXLSX(sel, `immunoman_deepsim_${tag}_${dateTag}.xlsx`));
+    loadSheetJS(() => buildDeepSimXLSX(sel, `madmacs_deepsim_${tag}_${dateTag}.xlsx`));
   });
   document.getElementById('dsp-dl-csv').addEventListener('click', ()=>{
     const sel = getSelected();
     if(!sel.length){ alert('Select at least one species.'); return; }
     const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
     const tag = sel.length===1 ? sel[0].commonName.toLowerCase().replace(/\s+/g,'-') : 'selected';
-    triggerDownload(`immunoman_deepsim_${tag}_${dateTag}.csv`, buildDeepSimCSV(sel), 'text/csv');
+    triggerDownload(`madmacs_deepsim_${tag}_${dateTag}.csv`, buildDeepSimCSV(sel), 'text/csv');
   });
   document.getElementById('dsp-dl-py').addEventListener('click', ()=>{
     const sel = getSelected();
     if(!sel.length){ alert('Select at least one species.'); return; }
     const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
-    triggerDownload(`immunoman_add_charts_${dateTag}.py`, buildChartScript(sel), 'text/plain');
+    triggerDownload(`madmacs_add_charts_${dateTag}.py`, buildChartScript(sel), 'text/plain');
   });
   document.getElementById('dsp-close').addEventListener('click', ()=> overlay.remove());
 }
@@ -6141,7 +6145,7 @@ function loadSheetJS(callback){
 
 // ─── Algorithm tab data ───────────────────────────────────────
 const ALGO_ROWS = [
-  ['IMMUNO-MAN — HQ ALGORITHM','',''],
+  ['MAD MACs — HQ ALGORITHM','',''],
   ['Same algorithm for all species. Species-specific parameters are drawn from the character bank.','',''],
   ['','',''],
   ['Step','What happens','Notes'],
@@ -6295,7 +6299,7 @@ function buildDeepSimXLSX(species, filename){
   const wbArray = XLSX.write(wb, {type:'array', bookType:'xlsx'});
 
   injectChartsIntoXLSX(wbArray, species, filename).catch(err => {
-    console.warn('[Immuno-Man] Chart injection failed, falling back to plain XLSX:', err);
+    console.warn('[Mad MACs] Chart injection failed, falling back to plain XLSX:', err);
     const blob = new Blob([wbArray], {type:'application/octet-stream'});
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
@@ -6304,7 +6308,7 @@ function buildDeepSimXLSX(species, filename){
     document.body.removeChild(a);
     setTimeout(()=>URL.revokeObjectURL(url),100);
   });
-  console.log(`[Immuno-Man] Deep sim XLSX export started — ${species.length} species + Algorithm tab + charts.`);
+  console.log(`[Mad MACs] Deep sim XLSX export started — ${species.length} species + Algorithm tab + charts.`);
 }
 
 // ─── Chart XML injection (browser-side, no Python needed) ────
@@ -6426,7 +6430,7 @@ async function injectChartsIntoXLSX(wbArray, species, filename){
     // SheetJS worksheets declare xmlns:r on the root element already.
     // Insert <drawing> before </worksheet>.
     const wsPath = `xl/worksheets/sheet${sheetNum}.xml`;
-    const wsFile = zip.file(wsPath); if(!wsFile){ console.warn('[Immuno-Man] Chart inject: sheet not found:', wsPath); continue; }
+    const wsFile = zip.file(wsPath); if(!wsFile){ console.warn('[Mad MACs] Chart inject: sheet not found:', wsPath); continue; }
     let wsXml = await wsFile.async('string');
     if(!wsXml.includes('<drawing')){
       if(!wsXml.includes('xmlns:r=')){
@@ -6463,7 +6467,7 @@ function buildDeepSimCSV(species){
   const esc = s => `"${String(s||'').replace(/"/g,'""')}"`;
 
   // Algorithm section
-  lines.push('# IMMUNO-MAN HQ ALGORITHM');
+  lines.push('# MAD MACs HQ ALGORITHM');
   ALGO_ROWS.forEach(row => {
     if(row.every(v=>!v)) lines.push('');
     else lines.push(row.map(v=>esc(v)).join(','));
@@ -6500,14 +6504,14 @@ function buildChartScript(species){
   const sheetNames = species.map(sp => sp.commonName.replace(/[\/\\?*\[\]]/g,'').substring(0,31));
   return `#!/usr/bin/env python3
 """
-Immuno-Man HQ Simulation — Chart Adder
-Run this script on an exported immunoman_deepsim_*.xlsx file to add:
+Mad MACs HQ Simulation — Chart Adder
+Run this script on an exported madmacs_deepsim_*.xlsx file to add:
   - Line chart: HQ over 15 levels, one line per individual + mean
   - Bar chart:  mean HQ per level, coloured by HQ value
 
 Usage:
     pip install openpyxl
-    python immunoman_add_charts.py immunoman_deepsim_*.xlsx
+    python madmacs_add_charts.py madmacs_deepsim_*.xlsx
 """
 import sys
 from openpyxl import load_workbook
@@ -6585,7 +6589,7 @@ def add_charts(wb, sheet_name):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python immunoman_add_charts.py <file.xlsx>")
+        print("Usage: python madmacs_add_charts.py <file.xlsx>")
         sys.exit(1)
     fname = sys.argv[1]
     wb = load_workbook(fname)
