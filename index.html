@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#030810">
@@ -784,103 +785,301 @@
 // Topic IDs here are independent of IL_TOPIC_REGISTRY — the same integer
 // may refer to completely different subjects in each registry.
 const TOPIC_REGISTRY = {
-  1: { label: 'Antibiotic Resistance', enabled: true  },
-  2: { label: 'Disease Ecology',       enabled: true  },
-  // 3: { label: 'Vaccine Science',     enabled: true  },
+  1:   { label: 'Antibiotic Resistance', enabled: true },
+  2:   { label: 'Disease Ecology', enabled: true },
+  3:   { label: 'Modelling', enabled: true },
+  4:   { label: 'Pandemics', enabled: true },
+  5:   { label: 'Wild Immunology', enabled: true },
 };
 
 const QUESTION_BANK = [
   {
     topic: 1,
     q: "Which antibiotic class works by inhibiting bacterial cell wall synthesis?",
-    choices: ["Fluoroquinolones", "Beta-lactams", "Macrolides", "Aminoglycosides"],
-    correct: 1
+    choices: [
+      "Fluoroquinolones",
+      "Beta-lactams",
+      "Macrolides",
+      "Aminoglycosides",
+    ],
+    correct: 1,
   },
   {
     topic: 1,
     q: "What is the primary mechanism by which bacteria develop antibiotic resistance?",
-    choices: ["They shrink in size", "Genetic mutation & selection", "They hibernate", "They absorb antibiotics"],
-    correct: 1
+    choices: [
+      "They shrink in size",
+      "Genetic mutation and selection",
+      "They hibernate",
+      "They absorb antibiotics",
+    ],
+    correct: 1,
   },
   {
     topic: 1,
     q: "Which bacterium is notorious for forming antibiotic-resistant biofilms in hospitals?",
-    choices: ["E. coli K12", "Streptococcus viridans", "MRSA", "Lactobacillus acidophilus"],
-    correct: 2
+    choices: [
+      "E. coli K12",
+      "Streptococcus viridans",
+      "MRSA",
+      "Lactobacillus acidophilus",
+    ],
+    correct: 2,
   },
   {
     topic: 1,
     q: "Gram-positive bacteria differ from gram-negative bacteria in that they have:",
-    choices: ["No cell membrane", "A thicker peptidoglycan layer", "An outer lipid membrane", "Fewer ribosomes"],
-    correct: 1
+    choices: [
+      "No cell membrane",
+      "A thicker peptidoglycan layer",
+      "An outer lipid membrane",
+      "Fewer ribosomes",
+    ],
+    correct: 1,
   },
   {
     topic: 1,
     q: "The term 'MIC' in microbiology stands for:",
-    choices: ["Minimal Infection Count", "Maximum Inhibitory Concentration", "Minimal Inhibitory Concentration", "Microbial Infection Curve"],
-    correct: 2
+    choices: [
+      "Minimal Infection Count",
+      "Maximum Inhibitory Concentration",
+      "Minimal Inhibitory Concentration",
+      "Microbial Infection Curve",
+    ],
+    correct: 2,
   },
   {
     topic: 1,
     q: "Horizontal gene transfer allows bacteria to:",
-    choices: ["Move faster through surfaces", "Share resistance genes between cells", "Grow without nutrients", "Repair damaged DNA"],
-    correct: 1
+    choices: [
+      "Move faster through surfaces",
+      "Share resistance genes between cells",
+      "Grow without nutrients",
+      "Repair damaged DNA",
+    ],
+    correct: 1,
   },
   {
     topic: 1,
     q: "Which of the following is NOT a common route of antibiotic resistance spread?",
-    choices: ["Conjugation", "Transformation", "Mitosis", "Transduction"],
-    correct: 2
+    choices: [
+      "Conjugation",
+      "Transformation",
+      "Mitosis",
+      "Transduction",
+    ],
+    correct: 2,
   },
   {
     topic: 1,
     q: "Biofilm formation primarily helps bacteria by:",
-    choices: ["Speeding up reproduction", "Protection from antibiotics & immune cells", "Increasing motility", "Sharing nutrients with host cells"],
-    correct: 1
+    choices: [
+      "Speeding up reproduction",
+      "Protection from antibiotics and immune cells",
+      "Increasing motility",
+      "Sharing nutrients with host cells",
+    ],
+    correct: 1,
   },
   {
     topic: 1,
     q: "The 'golden age of antibiotics' — when most major classes were discovered — roughly spanned:",
-    choices: ["1900–1930", "1940–1970", "1980–2000", "2000–2020"],
-    correct: 1
+    choices: [
+      "1900–1930",
+      "1940–1970",
+      "1980–2000",
+      "2000–2020",
+    ],
+    correct: 1,
   },
   {
     topic: 1,
     q: "Overuse of antibiotics in livestock is a concern because:",
-    choices: ["It makes meat taste different", "Resistance genes can transfer to human pathogens", "It reduces milk production", "It has no known effect on humans"],
-    correct: 1
+    choices: [
+      "It makes meat taste different",
+      "Resistance genes can transfer to human pathogens",
+      "It reduces milk production",
+      "It has no known effect on humans",
+    ],
+    correct: 1,
+  },
+  {
+    topic: 1,
+    q: "Which of the following is NOT considered a driver of antimicrobial resistance?",
+    choices: [
+      "Use of antimicrobials in human medicine",
+      "Use of antimicrobials in agriculture and livestock production",
+      "Natural coevolution between microbes and antimicrobial compounds",
+      "Increased host immunity due to vaccination programs",
+    ],
+    correct: 3,
   },
   {
     topic: 2,
     q: "What best describes the dilution effect in disease ecology?",
-    choices: ["Higher biodiversity increases disease transmission because more hosts are available for pathogens.", "Higher biodiversity reduces disease transmission because many species are poor hosts that dilute pathogen spread.", "Disease transmission remains constant regardless of biodiversity levels.", "Higher biodiversity eliminates pathogens entirely from an ecosystem."],
-    correct: 1
+    choices: [
+      "Higher biodiversity increases disease transmission because more hosts are available for pathogens.",
+      "Higher biodiversity reduces disease transmission because many species are poor hosts that dilute pathogen spread.",
+      "Disease transmission remains constant regardless of biodiversity levels.",
+      "Higher biodiversity eliminates pathogens entirely from an ecosystem.",
+    ],
+    correct: 1,
   },
   {
     topic: 2,
     q: "Which of the following best describes an emerging infectious disease?",
-    choices: ["A disease that has been present in a population for centuries with stable transmission rates.", "A disease that affects wildlife but can also cause disease in humans.", "A disease that has recently increased in incidence, geographic range, or host population.", "A disease that has been completely eradicated through vaccination."],
-    correct: 2
+    choices: [
+      "A disease that has been present in a population for centuries with stable transmission rates.",
+      "A disease that affects wildlife but can also cause disease in humans.",
+      "A disease that has recently increased in incidence, geographic range, or host population.",
+      "A disease that has been completely eradicated through vaccination.",
+    ],
+    correct: 2,
   },
   {
     topic: 2,
     q: "How can climate change influence the transmission of vector-borne diseases?",
-    choices: ["It can expand vector ranges in cooler and northern regions, increasing disease risk there.", "It can contract vector ranges at hot and arid margins, reducing disease risk there.", "It completely eliminates vectors in warmer climates.", "Both A and B are correct."],
+    choices: [
+      "It can expand vector ranges in cooler and northern regions, increasing disease risk there.",
+      "It can contract vector ranges at hot and arid margins, reducing disease risk there.",
+      "It completely eliminates vectors in warmer climates.",
+      "Both A and B are correct.",
+    ],
     correct: 3,
-    ordered: true
+    ordered: true,
   },
   {
     topic: 2,
     q: "Why is co-infection status often a better predictor of infection risk than body condition or season?",
-    choices: ["Because pathogens never interact with each other inside the same host.", "Because the presence of one pathogen can alter host immunity, making infection by other pathogens more or less likely.", "Because body condition and season have no effect on disease dynamics.", "Because co-infections only occur in unhealthy hosts."],
-    correct: 1
+    choices: [
+      "Because pathogens never interact with each other inside the same host.",
+      "Because the presence of one pathogen can alter host immunity, making infection by other pathogens more or less likely.",
+      "Because body condition and season have no effect on disease dynamics.",
+      "Because co-infections only occur in unhealthy hosts.",
+    ],
+    correct: 1,
   },
   {
     topic: 2,
     q: "In the life cycle of the sheep tick (Ixodes ricinus), which stage is most responsible for transmitting Borrelia burgdorferi (the cause of Lyme disease) to humans?",
-    choices: ["Adult stage (both males and females)", "Larval stage", "Nymph stage", "Adult female stage only"],
-    correct: 2
-  }
+    choices: [
+      "Adult stage (both males and females)",
+      "Larval stage",
+      "Nymph stage",
+      "Adult female stage only",
+    ],
+    correct: 2,
+  },
+  {
+    topic: 2,
+    q: "Spillover vs. spillback — which correctly describes the direction of each?",
+    choices: [
+      "Animal to human vs. human to animal",
+      "Human to animal vs. human to human",
+      "Animal to animal vs. human to human",
+      "Between human and animal (direction is not relevant)",
+    ],
+    correct: 0,
+  },
+  {
+    topic: 2,
+    q: "Which statement correctly distinguishes spillover from spillback?",
+    choices: [
+      "Spillover occurs when a pathogen moves from animals to humans, while spillback occurs when a pathogen moves from humans back to animals.",
+      "Spillover occurs when a pathogen moves from humans to animals, while spillback occurs when a pathogen moves between humans.",
+      "Spillover occurs when a pathogen spreads within animal populations, while spillback occurs when a pathogen spreads within human populations.",
+      "Spillover and spillback both refer to pathogen transmission between humans and animals without a directionality difference.",
+    ],
+    correct: 0,
+  },
+  {
+    topic: 3,
+    q: "What distinguishes an SEIR model from an SIR model?",
+    choices: [
+      "It includes an Exposed stage, representing individuals who are infected but not yet infectious, before entering the infectious compartment.",
+      "It includes an Environmental stage, representing pathogens surviving outside the host.",
+      "It includes an Epidemic threshold, only modeling outbreaks above a certain size.",
+      "It includes an Ever-immune stage, where recovered individuals cannot lose immunity.",
+    ],
+    correct: 0,
+  },
+  {
+    topic: 3,
+    q: "One way to represent vaccinated babies in a classic SIR model is:",
+    choices: [
+      "Keep them in S because they have not been infected.",
+      "Move them directly from S to R (immune) upon vaccination.",
+      "Keep them in I until they encounter a pathogen.",
+      "They cannot be represented in an SIR model.",
+    ],
+    correct: 1,
+  },
+  {
+    topic: 3,
+    q: "In a packed nightclub, which statement correctly contrasts density-dependent and frequency-dependent transmission?",
+    choices: [
+      "In a packed club, density-dependent diseases spread faster because more contacts occur, while frequency-dependent diseases spread at the same rate regardless of crowd size.",
+      "Density-dependent diseases are unaffected by crowd size, while frequency-dependent diseases spread faster in larger crowds.",
+      "Both types spread faster only if the club is larger.",
+      "Frequency-dependent diseases require the same number of infected people regardless of total club size to spread.",
+    ],
+    correct: 0,
+  },
+  {
+    topic: 3,
+    q: "In a nightclub, which statement illustrates density-dependent transmission?",
+    choices: [
+      "Infection risk rises as the total number of people in the club increases.",
+      "Infection risk depends only on the fraction of infectious people.",
+      "Infection risk is the same regardless of crowd size.",
+      "Infection risk depends on the number of infected bartenders.",
+    ],
+    correct: 0,
+  },
+  {
+    topic: 4,
+    q: "Which of the following correctly orders disease events from smallest geographic scale to largest?",
+    choices: [
+      "Outbreak to epidemic to pandemic",
+      "Epidemic to outbreak to pandemic",
+      "Pandemic to epidemic to outbreak",
+      "Epidemic to pandemic to outbreak",
+    ],
+    correct: 0,
+  },
+  {
+    topic: 4,
+    q: "Which statement best describes the difference between infectious and contagious diseases?",
+    choices: [
+      "Infectious diseases are caused by pathogens, while contagious diseases spread easily between hosts.",
+      "Infectious diseases spread easily between hosts, while contagious diseases are caused by pathogens.",
+      "Infectious diseases are caused by bacteria, while contagious diseases are caused by viruses.",
+      "Infectious diseases are transmitted through animals, while contagious diseases are transmitted between humans.",
+    ],
+    correct: 0,
+  },
+  {
+    topic: 4,
+    q: "Which of the following is NOT typically considered an epidemiologic feature of a pandemic?",
+    choices: [
+      "Wide geographic extension",
+      "High attack rates and rapid spread",
+      "Minimal population immunity",
+      "Pathogen exclusively infects animals, with no human transmission",
+    ],
+    correct: 3,
+  },
+  {
+    topic: 5,
+    q: "One of the main contributions of ecoimmunology to wider biology is:",
+    choices: [
+      "Showing that immunity is an integral, fitness-related part of organismal biology",
+      "Demonstrating that immune responses are similar across all species",
+      "Establishing that immune costs are negligible in natural populations",
+      "Ignoring evolutionary trade-offs in immune function",
+    ],
+    correct: 0,
+  },
 ];
 
 // ╔═══════════════════════════════════════════════════════════════╗
@@ -1135,7 +1334,7 @@ const HOST_SPECIES_BANK = [
     latinName:     'Myodes glareolus',
     characterName: 'Vince',
     namePool:      ['Vince','Vera','Victor','Valentijn','Violet','Vincenzo','Veerle','Viggo','Vita','Valerie'],
-    tagline:       '{name} is tougher than he looks — except around microbe 3. Something about it just gets under his skin.',
+    tagline:       '{name} is tougher than they look — except around microbe 3. Something about it just gets under their skin.',
     archetype:     'Generally resistant, specific tolerance',
     baseMin:       0,
     baseMax:       4,
@@ -1765,11 +1964,19 @@ const Q_TIERS = [1000, 100, 10, 1];
 
 // ─── Question shuffle deck ────────────────────────────────────
 // Returns true if a question passes both its own enabled flag and its topic's enabled flag.
+// Student-session topic exclusions — populated by Shift+M MY QUIZ TOPICS tab.
+// Topic IDs added here are excluded from quiz rotation for this page session only.
+// Does not modify TOPIC_REGISTRY. Cleared on page load; persists across games
+// within the same session (intentional — student sets it once, plays multiple games).
+const _studentTopicExclusions = new Set();
+
 function questionIsActive(q){
   if(q.enabled === false) return false;
   if(q.topic !== undefined){
     const t = TOPIC_REGISTRY[q.topic];
     if(t && t.enabled === false) return false;
+    // Student session exclusion — overrides without touching TOPIC_REGISTRY
+    if(_studentTopicExclusions.has(q.topic)) return false;
   }
   return true;
 }
@@ -2699,7 +2906,7 @@ let lvlAmrAddedDivision    = 0;  // cells that inherited resistance via division
 let lvlConjOpportunities   = 0;  // total donor-cell checks where spread was possible this level
 let lvlTotalDivisions      = 0;  // total successful cell divisions this level
 let lvlDivisionsNonResistant = 0;// divisions where parent was susceptible (non-resistant, non-wounded)
-let lvlVirusEats           = [0,0,0,0]; // times each virus (Huntex/Vektor/Flanx/Erratix) was eaten this level
+let lvlVirusEats           = [0,0,0,0]; // times each virus (H1N1/H3N2/H5N1/H7N9) was eaten this level
 let growthActive=false;
 let growthTimer=0;
 let growthTriggerTimer=0;
@@ -2937,7 +3144,7 @@ function makePlayer(){
 }
 const VCOLORS=['#ff3355','#ff8800','#aa44ff','#22ccff'];
 function makeViruses(){
-  const VNAMES=['Huntex','Vektor','Flanx','Erratix'];
+  const VNAMES=['H1N1','H3N2','H5N1','H7N9'];
   return [0,1,2,3].map(i=>({
     col:9+i%2,row:9+Math.floor(i/2),x:tpx(9+i%2),y:tpy(9+Math.floor(i/2)),
     dc:0,dr:0,speed:virusSpeed(),color:VCOLORS[i],name:VNAMES[i],
@@ -3271,18 +3478,18 @@ function updateVirus(v,dt){
           // Each ghost targets a different point to prevent bunching
           let tgtCol=player.col, tgtRow=player.row;
           if(gi===0){
-            // Huntex: direct chase — pure and relentless
+            // H1N1: direct chase — pure and relentless
           } else if(gi===1){
-            // Vektor: target ahead of player (intercept)
+            // H3N2: target ahead of player (intercept)
             const ahead=Math.min(3+Math.floor(level/2),5);
             tgtCol=wrap(player.col+player.dc*ahead);
             tgtRow=Math.max(0,Math.min(ROWS-1,player.row+player.dr*ahead));
           } else if(gi===2){
-            // Flanx: flank from opposite side
+            // H5N1: flank from opposite side
             tgtCol=wrap(player.col + (player.col<COLS/2 ? COLS/3 : -COLS/3));
             tgtRow=Math.max(0,Math.min(ROWS-1,player.row + (player.row<ROWS/2 ? ROWS/3 : -ROWS/3)));
           } else {
-            // Erratix: scatter to corner when very close, chase when far
+            // H7N9: scatter to corner when very close, chase when far
             const dist=Math.hypot(v.col-player.col,v.row-player.row);
             const scatterDist=Math.max(4, 8-Math.floor(level/2)); // shrinks with level
             if(dist<scatterDist){ tgtCol=1; tgtRow=ROWS-2; }
@@ -3489,7 +3696,7 @@ function checkWin(){
       pillsEaten:          eaten,
       pillsMissed:         missed,
       pillSkipped:         skipped,
-      virusEats:           [...lvlVirusEats],  // [Huntex, Vektor, Flanx, Erratix]
+      virusEats:           [...lvlVirusEats],  // [H1N1, H3N2, H5N1, H7N9]
     });
   })();
   startRainLoop('igg', 0.6, ()=>{
@@ -5060,7 +5267,7 @@ function buildSessionCSV(){
     'amr_cells_seeded','amr_added_conjugation','amr_added_division',
     'conj_opportunities','total_divisions','divisions_nonresistant',
     'pills_eaten','pills_missed','pill_skipped',
-    'eaten_huntex','eaten_vektor','eaten_flanx','eaten_erratix',
+    'eaten_h1n1','eaten_h3n2','eaten_h5n1','eaten_h7n9',
   ].join(',');
 
   // One row per completed level
@@ -5268,7 +5475,7 @@ function showUploadOverlay(){
     </div>
     <div id="upload-filename" style="font-size:.7rem;color:#2a5540;font-family:'Orbitron',monospace;
       letter-spacing:1px;min-height:1.2em;"></div>
-    <div id="upload-status" style="max-width:420px;width:100%;max-height:140px;overflow-y:auto;
+    <div id="upload-status" style="max-width:420px;width:100%;max-height:140px;overflow-y:auto;-webkit-overflow-scrolling:touch;
       font-size:.72rem;line-height:1.7;text-align:left;display:none;
       background:rgba(0,0,0,.4);border:1px solid rgba(64,255,170,.12);
       border-radius:4px;padding:10px 14px;box-sizing:border-box;"></div>
@@ -6027,7 +6234,7 @@ function showDeepSimPicker(){
         <span id="dsp-count" style="font-size:.48rem;color:#1a5a40;margin-left:4px;align-self:center;">0 selected</span>
       </div>
 
-      <div id="dsp-list" style="border:1px solid #1a4a30;margin-bottom:12px;max-height:300px;overflow-y:auto;">
+      <div id="dsp-list" style="border:1px solid #1a4a30;margin-bottom:12px;max-height:300px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
         ${listItems}
       </div>
 
@@ -6067,21 +6274,21 @@ function showDeepSimPicker(){
 
   document.getElementById('dsp-dl-xlsx').addEventListener('click', ()=>{
     const sel = getSelected();
-    if(!sel.length){ alert('Select at least one species.'); return; }
+    if(!sel.length){ document.getElementById('dsp-count').style.color='#ff7799'; document.getElementById('dsp-count').textContent='Select at least one species.'; setTimeout(()=>{ document.getElementById('dsp-count').style.color='#1a5a40'; const n=document.querySelectorAll('.dsp-cb:checked').length; document.getElementById('dsp-count').textContent=n+' selected'; },2500); return; }
     const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
     const tag = sel.length===1 ? sel[0].commonName.toLowerCase().replace(/\s+/g,'-') : 'selected';
     loadSheetJS(() => buildDeepSimXLSX(sel, `madmacs_deepsim_${tag}_${dateTag}.xlsx`));
   });
   document.getElementById('dsp-dl-csv').addEventListener('click', ()=>{
     const sel = getSelected();
-    if(!sel.length){ alert('Select at least one species.'); return; }
+    if(!sel.length){ document.getElementById('dsp-count').style.color='#ff7799'; document.getElementById('dsp-count').textContent='Select at least one species.'; setTimeout(()=>{ document.getElementById('dsp-count').style.color='#1a5a40'; const n=document.querySelectorAll('.dsp-cb:checked').length; document.getElementById('dsp-count').textContent=n+' selected'; },2500); return; }
     const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
     const tag = sel.length===1 ? sel[0].commonName.toLowerCase().replace(/\s+/g,'-') : 'selected';
     triggerDownload(`madmacs_deepsim_${tag}_${dateTag}.csv`, buildDeepSimCSV(sel), 'text/csv');
   });
   document.getElementById('dsp-dl-py').addEventListener('click', ()=>{
     const sel = getSelected();
-    if(!sel.length){ alert('Select at least one species.'); return; }
+    if(!sel.length){ document.getElementById('dsp-count').style.color='#ff7799'; document.getElementById('dsp-count').textContent='Select at least one species.'; setTimeout(()=>{ document.getElementById('dsp-count').style.color='#1a5a40'; const n=document.querySelectorAll('.dsp-cb:checked').length; document.getElementById('dsp-count').textContent=n+' selected'; },2500); return; }
     const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
     triggerDownload(`madmacs_add_charts_${dateTag}.py`, buildChartScript(sel), 'text/plain');
   });
@@ -6213,7 +6420,7 @@ function showTeacherPanel(startTab) {
   const bar  = _btsTabBar(TABS, startTab);
 
   const area = document.createElement('div');
-  area.style.cssText = 'flex:1;overflow-y:auto;padding:24px;';
+  area.style.cssText = 'flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:24px;';
 
   // ── tab 0: EXPORT QUIZ BANK ──────────────────────────────────
   const tq  = QUESTION_BANK.length;
@@ -6256,7 +6463,7 @@ function showTeacherPanel(startTab) {
       </label>
     </div>
     <div id="du-filename" style="font-family:'Exo 2',sans-serif;font-size:.9rem;color:#3a9a68;min-height:1.4em;letter-spacing:.5px;"></div>
-    <div id="du-status" style="display:none;max-width:460px;max-height:160px;overflow-y:auto;font-family:'Exo 2',sans-serif;font-size:.9rem;line-height:1.8;background:rgba(0,0,0,.4);border:1px solid rgba(64,255,170,.12);border-radius:4px;padding:12px 16px;box-sizing:border-box;"></div>
+    <div id="du-status" style="display:none;max-width:460px;max-height:160px;overflow-y:auto;-webkit-overflow-scrolling:touch;font-family:'Exo 2',sans-serif;font-size:.9rem;line-height:1.8;background:rgba(0,0,0,.4);border:1px solid rgba(64,255,170,.12);border-radius:4px;padding:12px 16px;box-sizing:border-box;"></div>
     <div style="border:1px solid rgba(64,255,170,.15);border-radius:4px;
       padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
       <div style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:700;
@@ -6455,11 +6662,11 @@ function showStudentPanel(startTab) {
   if (!ov) return;
 
   const hdr  = _btsHeader('STUDENT TOOLS');
-  const TABS = ['MY SESSION', 'SIMULATIONS'];
+  const TABS = ['MY SESSION', 'SIMULATIONS', 'MY QUIZ TOPICS'];
   const bar  = _btsTabBar(TABS, startTab);
 
   const area = document.createElement('div');
-  area.style.cssText = 'flex:1;overflow-y:auto;padding:24px;';
+  area.style.cssText = 'flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:24px;';
 
   // ── tab 0: MY SESSION ────────────────────────────────────────
   const p0 = document.createElement('div');
@@ -6542,7 +6749,62 @@ function showStudentPanel(startTab) {
     </div>
   `;
 
-  [p0, p1].forEach((p, i) => {
+  // ── tab 2: MY QUIZ TOPICS ───────────────────────────────────
+  // Build topic rows dynamically from TOPIC_REGISTRY + QUESTION_BANK
+  const p2 = document.createElement('div');
+  p2.style.cssText = 'flex-direction:column;gap:16px;max-width:460px;margin:0 auto;';
+
+  // Gather enabled topics and count active questions per topic
+  const enabledTopics = Object.entries(TOPIC_REGISTRY)
+    .filter(([, t]) => t.enabled !== false)
+    .map(([id, t]) => {
+      const tid = parseInt(id);
+      const qCount = QUESTION_BANK.filter(q =>
+        q.topic === tid && q.enabled !== false
+      ).length;
+      return { id: tid, label: t.label, qCount };
+    });
+
+  const topicRowsHTML = enabledTopics.map(({ id, label, qCount }) => {
+    const excluded = _studentTopicExclusions.has(id);
+    return `
+      <label style="display:flex;align-items:center;gap:12px;cursor:pointer;
+        padding:10px 12px;border:1px solid rgba(64,255,170,.12);border-radius:4px;
+        transition:background .12s;"
+        onmouseover="this.style.background='rgba(64,255,170,.04)'"
+        onmouseout="this.style.background='transparent'">
+        <input type="checkbox" data-topic-id="${id}"
+          class="qt-cb"
+          ${excluded ? '' : 'checked'}
+          style="accent-color:#40ffaa;width:15px;height:15px;flex-shrink:0;">
+        <span style="font-family:'Exo 2',sans-serif;font-size:.95rem;
+          color:#40ffaa;flex:1;">${label}</span>
+        <span style="font-family:'Orbitron',monospace;font-size:.65rem;
+          color:#2a7a50;white-space:nowrap;">${qCount} question${qCount !== 1 ? 's' : ''}</span>
+      </label>`;
+  }).join('');
+
+  p2.innerHTML = `
+    <div style="border:1px solid rgba(64,255,170,.15);border-radius:4px;
+      padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:700;
+        letter-spacing:2px;color:#40ffaa;">MY QUIZ TOPICS</div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:1rem;color:#5abf8a;line-height:1.75;">
+        Choose which topics appear in your quiz rotation this session.
+        Unchecked topics are excluded until you re-enable them or reload the page.
+        This does not affect other players.
+      </div>
+      <div id="qt-rows" style="display:flex;flex-direction:column;gap:6px;">
+        ${topicRowsHTML}
+      </div>
+      <div id="qt-warn" style="display:none;font-family:'Exo 2',sans-serif;
+        font-size:.88rem;color:#ff7799;">Select at least one topic.</div>
+      <div id="qt-confirm" style="display:none;font-family:'Exo 2',sans-serif;
+        font-size:.88rem;color:#40ffaa;"></div>
+    </div>
+  `;
+
+  [p0, p1, p2].forEach((p, i) => {
     p.style.display = i === startTab ? 'flex' : 'none';
     area.appendChild(p);
   });
@@ -6564,6 +6826,46 @@ function showStudentPanel(startTab) {
   // ── tab 0 handlers ──
   const csvBtn = document.getElementById('ms-csv-btn');
   if (csvBtn && hasData) csvBtn.addEventListener('click', () => { downloadSessionCSV(); ov.remove(); });
+
+  // ── tab 2 handlers — topic checkboxes ──
+  // Use event delegation on p2 so we don't need to query each checkbox individually
+  p2.addEventListener('change', e => {
+    const cb = e.target.closest('.qt-cb');
+    if (!cb) return;
+    const topicId = parseInt(cb.dataset.topicId);
+
+    if (cb.checked) {
+      _studentTopicExclusions.delete(topicId);
+    } else {
+      // Guard: never allow excluding ALL topics
+      const wouldLeaveNone = enabledTopics.every(({ id }) =>
+        id === topicId ? true : _studentTopicExclusions.has(id)
+      );
+      if (wouldLeaveNone) {
+        cb.checked = true; // revert
+        document.getElementById('qt-warn').style.display = 'block';
+        setTimeout(() => { document.getElementById('qt-warn').style.display = 'none'; }, 2500);
+        return;
+      }
+      _studentTopicExclusions.add(topicId);
+    }
+
+    // Rebuild deck immediately so next question draw reflects the change
+    questionDeck = buildShuffledDeck();
+    questionDeckPos = 0;
+
+    // Show confirmation
+    const activeCount = QUESTION_BANK.filter(q => questionIsActive(q)).length;
+    const confirmEl = document.getElementById('qt-confirm');
+    if (confirmEl) {
+      confirmEl.style.display = 'block';
+      const excl = _studentTopicExclusions.size;
+      confirmEl.textContent = excl === 0
+        ? `All topics active — ${activeCount} question${activeCount !== 1 ? 's' : ''} in rotation.`
+        : `${excl} topic${excl !== 1 ? 's' : ''} excluded — ${activeCount} question${activeCount !== 1 ? 's' : ''} in rotation.`;
+    }
+    document.getElementById('qt-warn').style.display = 'none';
+  });
 
   // ── tab 1 handlers ──
   document.getElementById('ms-hqsim-btn').addEventListener('click', () => { ov.remove(); showHQSimOverlay(); });
