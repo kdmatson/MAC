@@ -13,7 +13,7 @@
 <meta name="author" content="Kevin D. Matson">
 <meta name="description" content="MAD MACs is a vintage-style educational arcade game featuring quiz elements and animated interludes that link to background sources.">
 <meta name="license" content="CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0/">
-<meta name="version" content="AMR step 6 v8 — bug fixes + localStorage migration + new interludes (CHASE_REVERSAL_A/B + OPSONISE + ENGULF) 20260314">
+<meta name="version" content="MADMACs v2.2 — Preview Quiz Bank tab (Shift+D tab 0) + arrow key nav + quiz choice rewrites (L987/L1021/L999/L954) + console clean 20260319">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;600&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -133,9 +133,10 @@
   }
   #quiz-modal.active { display:flex; }
   #quiz-box {
-    width:90%; background:#0d1828;
+    width:90%; max-height:88vh; background:#0d1828;
     border:1px solid rgba(64,255,170,.2); border-radius:8px; overflow:hidden;
     font-family:'Exo 2',sans-serif;
+    display:flex; flex-direction:column;
   }
   #quiz-header {
     background:#080f1c; padding:14px 20px;
@@ -156,7 +157,7 @@
   .q-pip[data-pts="1"]   { border-color:#ff3355; color:#ff3355; }
   .q-pip.used  { opacity:.18; transform:scale(.82); }
   .q-pip.current{ transform:scale(1.22); box-shadow:0 0 10px currentColor; }
-  #quiz-body { padding:24px 20px 16px; }
+  #quiz-body { padding:24px 20px 16px; overflow-y:auto; -webkit-overflow-scrolling:touch; flex:1; min-height:0; }
   #quiz-question { font-size:.95rem; line-height:1.75; color:#c8e8d0; margin-bottom:20px; min-height:44px; }
   #quiz-choices { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:20px; }
   .q-choice {
@@ -497,9 +498,9 @@
     <div id="hq-fill" style="height:100%;border-radius:3px;transition:width 1.1s ease-out,background 1.1s ease-out,box-shadow 1.1s ease-out;"></div>
   </div>
   <div style="position:relative;margin-top:3px;padding:0 1px;height:1rem;">
-    <span style="font-family:'Orbitron',monospace;font-size:.42rem;letter-spacing:.5px;color:#44cc66;position:absolute;left:0;">Resistant</span>
+    <span style="font-family:'Orbitron',monospace;font-size:.42rem;letter-spacing:.5px;color:#44cc66;position:absolute;left:0;">Non-permissive</span>
     <span style="font-family:'Orbitron',monospace;font-size:.42rem;letter-spacing:.5px;color:#ddcc22;position:absolute;left:50%;transform:translateX(-50%);">Neutral</span>
-    <span style="font-family:'Orbitron',monospace;font-size:.42rem;letter-spacing:.5px;color:#ee4422;position:absolute;right:0;">Tolerant</span>
+    <span style="font-family:'Orbitron',monospace;font-size:.42rem;letter-spacing:.5px;color:#ee4422;position:absolute;right:0;">Permissive</span>
   </div>
 </div>
 <div id="pq-bar-wrap" style="width:504px;margin-bottom:4px;display:none;">
@@ -524,7 +525,7 @@
   </div>
   <div style="position:relative;margin-top:3px;padding:0 1px;height:1rem;">
     <span style="font-family:'Orbitron',monospace;font-size:.42rem;letter-spacing:.5px;color:#44cc66;position:absolute;left:0;">Sensitive</span>
-    <span style="font-family:'Orbitron',monospace;font-size:.42rem;letter-spacing:.5px;color:#ddcc22;position:absolute;left:50%;transform:translateX(-50%);">Resistant</span>
+    <span style="font-family:'Orbitron',monospace;font-size:.42rem;letter-spacing:.5px;color:#ddcc22;position:absolute;left:50%;transform:translateX(-50%);">Non-permissive</span>
     <span style="font-family:'Orbitron',monospace;font-size:.42rem;letter-spacing:.5px;color:#ee4422;position:absolute;right:0;">Pan-resistant</span>
   </div>
 </div>
@@ -954,9 +955,9 @@ const QUESTION_BANK = [
     topic: 2,
     q: "Why is co-infection status often a better predictor of infection risk than body condition or season?",
     choices: [
-      "Because pathogens never interact with each other inside the same host.",
-      "Because the presence of one pathogen can alter host immunity, making infection by other pathogens more or less likely.",
-      "Because body condition and season have no effect on disease dynamics.",
+      "Because pathogens within the same host never interact or influence each other's replication.",
+      "Because one pathogen can alter host immunity, making infection by other pathogens more or less likely.",
+      "Because body condition and season are unrelated to immune function and infection susceptibility.",
       "Because co-infections only occur in unhealthy hosts.",
     ],
     correct: 1,
@@ -987,10 +988,10 @@ const QUESTION_BANK = [
     topic: 2,
     q: "Which statement correctly distinguishes spillover from spillback?",
     choices: [
-      "Spillover occurs when a pathogen moves from animals to humans, while spillback occurs when a pathogen moves from humans back to animals.",
-      "Spillover occurs when a pathogen moves from humans to animals, while spillback occurs when a pathogen moves between humans.",
-      "Spillover occurs when a pathogen spreads within animal populations, while spillback occurs when a pathogen spreads within human populations.",
-      "Spillover and spillback both refer to pathogen transmission between humans and animals without a directionality difference.",
+      "Spillover: pathogens move from animals to humans; spillback: pathogens move from humans to animals.",
+      "Spillover: pathogens move from humans to animals; spillback: pathogens move from animals to humans.",
+      "Spillover: pathogens spread within animal populations; spillback: pathogens spread within human populations.",
+      "Spillover and spillback both describe pathogen movement between humans and animals, with no directional difference.",
     ],
     correct: 0,
     enabled: false,
@@ -999,7 +1000,7 @@ const QUESTION_BANK = [
     topic: 3,
     q: "What distinguishes an SEIR model from an SIR model?",
     choices: [
-      "It includes an Exposed stage, representing individuals who are infected but not yet infectious, before entering the infectious compartment.",
+      "It includes an Exposed stage, representing individuals who are infected but not yet infectious.",
       "It includes an Environmental stage, representing pathogens surviving outside the host.",
       "It includes an Epidemic threshold, only modeling outbreaks above a certain size.",
       "It includes an Ever-immune stage, where recovered individuals cannot lose immunity.",
@@ -1019,12 +1020,12 @@ const QUESTION_BANK = [
   },
   {
     topic: 3,
-    q: "In a packed nightclub, which statement correctly contrasts density-dependent and frequency-dependent transmission?",
+    q: "As a nightclub becomes more crowded with partiers, which statement correctly contrasts density- vs. frequency-dependent transmission?",
     choices: [
-      "In a packed club, density-dependent diseases spread faster because more contacts occur, while frequency-dependent diseases spread at the same rate regardless of crowd size.",
-      "Density-dependent diseases are unaffected by crowd size, while frequency-dependent diseases spread faster in larger crowds.",
-      "Both types spread faster only if the club is larger.",
-      "Frequency-dependent diseases require the same number of infected people regardless of total club size to spread.",
+      "As the club fills, density-dependent spread increases; frequency-dependent spread does not.",
+      "As the club fills, frequency-dependent spread increases; density-dependent spread does not.",
+      "As the club fills, both types of spread increase.",
+      "As the club fills, neither type of spread is affected.",
     ],
     correct: 0,
   },
@@ -1132,7 +1133,7 @@ const QUESTION_BANK = [
     q: "Some hosts in MAD MACs have a specialist microbe that causes a sudden HQ spike beyond the normal range. What biological phenomenon does this represent?",
     choices: [
       "Cross-protective immunity between related pathogens",
-      "Host�parasite specialization where a pathogen is highly adapted to a particular host species",
+      "Host–parasite specialization where a pathogen is highly adapted to a particular host species",
       "Antibiotic-induced microbiome disruption",
       "Vaccine-induced heterologous protection",
     ],
@@ -1176,7 +1177,7 @@ const QUESTION_BANK = [
     q: "MAD MACs features four viruses with distinct pursuit strategies: direct chase, interception, flanking, and scatter/chase. Modelling distinct behavioural strategies in interacting agents draws on concepts from which field?",
     choices: [
       "Epidemiological compartment modelling in infectious diseases",
-      "Evolutionary game theory and predator�prey pursuit strategies",
+      "Evolutionary game theory and predator–prey pursuit strategies",
       "Pharmacokinetic modelling of drug concentrations in tissues",
       "Population virology and viral genetic diversity studies",
     ],
@@ -1189,7 +1190,7 @@ const QUESTION_BANK = [
       "Tolerant hosts eliminate pathogens faster than resistant hosts during infection",
       "Tolerant hosts and resistant hosts are functionally equivalent at the population level",
       "Resistance reduces pathogen load; tolerance maintains host fitness despite pathogen load",
-      "Tolerance is only relevant in plant�pathogen interactions in ecology",
+      "Tolerance is only relevant in plant–pathogen interactions in ecology",
     ],
     correct: 2,
   },
@@ -1219,10 +1220,10 @@ const QUESTION_BANK = [
     topic: 1,
     q: "Early antibiotic pharmacology sometimes used the term MAC alongside MIC (Minimum Inhibitory Concentration). What did MAC refer to in this context?",
     choices: [
-      "Maximum Antibiotic Clearance � the rate at which antibiotics are removed from the body",
-      "Minimum Antibiotic Concentration � the lowest concentration producing a substantial reduction in bacterial numbers",
-      "Microbial Adaptation Capacity � the approximate speed at which bacterial resistance evolves",
-      "Minimum Antimicrobial Coverage � the proportion of pathogens that are eliminated by treatment",
+      "Maximum Antibiotic Clearance — the rate at which antibiotics are removed from the body",
+      "Minimum Antibiotic Concentration — the lowest concentration producing a substantial reduction in bacterial numbers",
+      "Microbial Adaptation Capacity — the approximate speed at which bacterial resistance evolves",
+      "Minimum Antimicrobial Coverage — the proportion of pathogens that are eliminated by treatment",
     ],
     correct: 1,
   },
@@ -1385,9 +1386,9 @@ const IL_BANK = [
 // ║                                                                      ║
 // ║   NUMERICAL PROPERTIES  ──────────────────────────────────────────  ║
 // ║   baseMin / baseMax  : HQ range this species normally occupies.      ║
-// ║                        0 = maximally resistant (bacteria divide      ║
+// ║                        0 = maximally non-permissive (bacteria divide      ║
 // ║                        slowly, easy for player).                     ║
-// ║                        10 = maximally tolerant (bacteria divide      ║
+// ║                        10 = maximally permissive (bacteria divide      ║
 // ║                        fast, hard for player).                       ║
 // ║   jitter             : max random HQ change per level (±).           ║
 // ║                        Wider for Middler species (±3 vs ±2).         ║
@@ -1396,15 +1397,15 @@ const IL_BANK = [
 // ║                        Microbe type 5 is a universal challenge —     ║
 // ║                        no species is assigned as specialist.         ║
 // ║   specialistMod      : HQ modifier at the specialist microbe.        ║
-// ║                        +5 = tolerance spike (breaks above baseMax).  ║
-// ║                        -5 = resistance dip (breaks below baseMin).   ║
+// ║                        +5 = permissive spike (breaks above baseMax).  ║
+// ║                        -5 = non-permissive dip (breaks below baseMin).   ║
 // ║                        null if no specialist.                        ║
 // ║   memoryDec          : HQ reduction per repeat encounter with a      ║
 // ║                        non-specialist microbe. Negative integer.     ║
 // ║                        Default -2. Represents immunological memory.  ║
 // ║   memoryDecSpecialist: weaker memory reduction at the specialist     ║
 // ║                        microbe. Default -0.5. Host is               ║
-// ║                        constitutively tolerant/resistant there.      ║
+// ║                        constitutively permissive/non-permissive there.      ║
 // ║   m5Hit              : flat HQ increase at microbe type 5.           ║
 // ║                        Universal — same value for all species.       ║
 // ║                        Default +2.                                   ║
@@ -1418,8 +1419,8 @@ const IL_BANK = [
 
 const HOST_SPECIES_BANK = [
 
-  // ── Universally tolerant ──────────────────────────────────────────────
-  // HQ stays high (6–10) across all microbes. Hard for the player throughout.
+  // ── Universally permissive ─────────────────────────────────────────────
+  // HQ stays high (6–10) across all microbes. Permissive throughout — hard for player.
 
   {
     commonName:    'White-footed mouse',
@@ -1427,7 +1428,7 @@ const HOST_SPECIES_BANK = [
     characterName: 'Milo',
     namePool:      ['Milo','Max','Monty','Mees','Murphy','Marco','Matteo','Morris','Maurits','Marcel'],
     tagline:       'Easy-going {name}. You tolerate a lot of nonsense — just don\'t let your microbial guests get too comfortable. They will.',
-    archetype:     'Universally tolerant',
+    archetype:     'Universally permissive',
     baseMin:       6,     // lowest HQ this species normally reaches
     baseMax:       10,    // highest HQ this species normally reaches
     jitter:        2,     // ± max HQ change per level
@@ -1446,7 +1447,7 @@ const HOST_SPECIES_BANK = [
     characterName: 'Rex',
     namePool:      ['Rex','Rupert','Roos','Robbie','Raphael','Rik','Remi','Rosie','Rudolf','Roos'],
     tagline:       'Poor {name}. Always the last to complain, always the first to be infected. Good luck out there.',
-    archetype:     'Universally tolerant',
+    archetype:     'Universally permissive',
     baseMin:       6,
     baseMax:       10,
     jitter:        2,
@@ -1459,8 +1460,8 @@ const HOST_SPECIES_BANK = [
     scientificHook: 'Highly susceptible to myxomatosis and rabbit haemorrhagic disease. Classic model organism for immunology; low natural resistance to introduced pathogens.',
   },
 
-  // ── Universally resistant ─────────────────────────────────────────────
-  // HQ stays low (0–4) across all microbes. Easy for the player throughout.
+  // ── Universally non-permissive ─────────────────────────────────────────
+  // HQ stays low (0–4) across all microbes. Non-permissive throughout — easy for player.
 
   {
     commonName:    'Virginia opossum',
@@ -1468,7 +1469,7 @@ const HOST_SPECIES_BANK = [
     characterName: 'Opal',
     namePool:      ['Opal','Odette','Octavia','Orla','Olivia','Olga','Odile','Ottoline','Oda','Olympe'],
     tagline:       'Nothing bothers {name}. Seriously. Microbes take one look and keep walking. Enjoy the peace.',
-    archetype:     'Universally resistant',
+    archetype:     'Universally non-permissive',
     baseMin:       0,
     baseMax:       4,
     jitter:        2,
@@ -1487,7 +1488,7 @@ const HOST_SPECIES_BANK = [
     characterName: 'Lenny',
     namePool:      ['Lenny','Lars','Luna','Lotte','Leo','Luuk','Liesbeth','Lorenzo','Lies','Luca'],
     tagline:       '{name} runs cold — literally. Microbes find {name} deeply uninviting. A quiet, uneventful session awaits.',
-    archetype:     'Universally resistant',
+    archetype:     'Universally non-permissive',
     baseMin:       0,
     baseMax:       4,
     jitter:        2,
@@ -1500,8 +1501,8 @@ const HOST_SPECIES_BANK = [
     scientificHook: 'Ectotherm; immune function is temperature-dependent and generally less robust than endotherms at ambient temperatures. Complement-dependent innate immunity predominates.',
   },
 
-  // ── Generally resistant, specific tolerance ───────────────────────────
-  // HQ low (0–4) most of the time, but spikes HIGH at one microbe type.
+  // ── Generally non-permissive, permissive to specific microbe ───────────
+  // HQ low (0–4) most of the time, but spikes HIGH (permissive) at one microbe type.
 
   {
     commonName:    'European hedgehog',
@@ -1509,17 +1510,17 @@ const HOST_SPECIES_BANK = [
     characterName: 'Hazel',
     namePool:      ['Hazel','Hugo','Hedda','Hendrik','Harriet','Hans','Hilde','Harvey','Hanna','Herbert'],
     tagline:       '{name} handles most things with quiet dignity. Microbe 1, though? Total soft spot. Brace yourself at level 1.',
-    archetype:     'Generally resistant, specific tolerance',
+    archetype:     'Generally non-permissive, permissive to specific microbe',
     baseMin:       0,
     baseMax:       4,
     jitter:        2,
-    specialistMicrobe:    1,      // spikes tolerant at microbe type 1
-    specialistMod:        5,      // +5 HQ — breaks above baseMax (tolerance spike)
+    specialistMicrobe:    1,      // spikes permissive at microbe type 1
+    specialistMod:        5,      // +5 HQ — breaks above baseMax (permissive spike)
     memoryDec:            -2,
     memoryDecSpecialist:  -0.5,   // weak memory at microbe 1 — spike stays high
     m5Hit:                2,
     enabled:       true,
-    scientificHook: 'Known carrier of Salmonella and Borrelia species without apparent disease. Specific tolerance to certain bacterial pathogens while remaining susceptible to others.',
+    scientificHook: 'Known carrier of Salmonella and Borrelia species without apparent disease. Specific tolerance to certain bacterial pathogens — reflected in game as high permissiveness (HQ spike) at the specialist microbe — while remaining non-permissive to others.',
   },
 
   {
@@ -1528,21 +1529,21 @@ const HOST_SPECIES_BANK = [
     characterName: 'Vince',
     namePool:      ['Vince','Vera','Victor','Valentijn','Violet','Vincenzo','Veerle','Viggo','Vita','Valerie'],
     tagline:       '{name} is tougher than they look — except around microbe 3. Something about it just gets under their skin.',
-    archetype:     'Generally resistant, specific tolerance',
+    archetype:     'Generally non-permissive, permissive to specific microbe',
     baseMin:       0,
     baseMax:       4,
     jitter:        2,
-    specialistMicrobe:    3,      // spikes tolerant at microbe type 3
-    specialistMod:        5,      // +5 HQ — breaks above baseMax (tolerance spike)
+    specialistMicrobe:    3,      // spikes permissive at microbe type 3
+    specialistMod:        5,      // +5 HQ — breaks above baseMax (permissive spike)
     memoryDec:            -2,
     memoryDecSpecialist:  -0.5,
     m5Hit:                2,
     enabled:       true,
-    scientificHook: 'Reservoir host for Puumala orthohantavirus in Europe. Carries and sheds virus without severe disease (tolerance). Susceptible to other pathogens.',
+    scientificHook: 'Reservoir host for Puumala orthohantavirus in Europe. Carries and sheds virus without severe disease — a classic example of ecological tolerance, where host fitness is maintained despite persistent infection, modelled here as sustained high permissiveness (HQ spike) at the specialist microbe. Non-permissive to other pathogens.',
   },
 
-  // ── Generally tolerant, specific resistance ───────────────────────────
-  // HQ high (6–10) most of the time, but dips LOW at one microbe type.
+  // ── Generally permissive, non-permissive to specific microbe ───────────
+  // HQ high (6–10) most of the time, but dips LOW (non-permissive) at one microbe type.
 
   {
     commonName:    'Common blackbird',
@@ -1550,12 +1551,12 @@ const HOST_SPECIES_BANK = [
     characterName: 'Bruno',
     namePool:      ['Bruno','Bas','Bella','Bram','Beatrix','Boris','Bianca','Benno','Bernadette','Bert'],
     tagline:       '{name} struggles with most microbes, but microbe 2? Ancient rivalry. Don\'t ask. {name} always wins that one.',
-    archetype:     'Generally tolerant, specific resistance',
+    archetype:     'Generally permissive, non-permissive to specific microbe',
     baseMin:       6,
     baseMax:       10,
     jitter:        2,
-    specialistMicrobe:    2,      // dips resistant at microbe type 2
-    specialistMod:        -5,     // -5 HQ — breaks below baseMin (resistance dip)
+    specialistMicrobe:    2,      // dips non-permissive at microbe type 2
+    specialistMod:        -5,     // -5 HQ — breaks below baseMin (non-permissive dip)
     memoryDec:            -2,
     memoryDecSpecialist:  -0.5,   // weak memory at microbe 2 — dip deepens slowly
     m5Hit:                2,
@@ -1569,12 +1570,12 @@ const HOST_SPECIES_BANK = [
     characterName: 'Brock',
     namePool:      ['Brock','Boris','Bea','Bart','Brigitte','Benedict','Boudewijn','Brenda','Bas','Bjorn'],
     tagline:       '{name} is broadly unbothered by good health. But microbe 4 learned the hard way not to mess with {name}.',
-    archetype:     'Generally tolerant, specific resistance',
+    archetype:     'Generally permissive, non-permissive to specific microbe',
     baseMin:       6,
     baseMax:       10,
     jitter:        2,
-    specialistMicrobe:    4,      // dips resistant at microbe type 4
-    specialistMod:        -5,     // -5 HQ — breaks below baseMin (resistance dip)
+    specialistMicrobe:    4,      // dips non-permissive at microbe type 4
+    specialistMod:        -5,     // -5 HQ — breaks below baseMin (non-permissive dip)
     memoryDec:            -2,
     memoryDecSpecialist:  -0.5,
     m5Hit:                2,
@@ -5694,7 +5695,6 @@ function _runPreview(idx, label){
     console.warn(`[Mad MACs] IL_BANK index ${idx} out of range (0–${IL_BANK.length-1}).`);
     return;
   }
-  console.log(`[Mad MACs] ${label} IL_BANK[${idx}] — "${IL_BANK[idx].title}"`);
   ilInit();
   ilOnDone = null; // no follow-on action after preview
   ilLastIdx = idx;
@@ -5811,7 +5811,6 @@ function downloadGameFile(){
   document.body.appendChild(a); a.click();
   document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url), 10000);
-  console.log('[Mad MACs] Game file downloaded as: ' + filename);
 }
 
 function downloadSessionCSV(){
@@ -5824,7 +5823,6 @@ function downloadSessionCSV(){
   const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
   const nameTag = (sessionHostName || 'unknown').toLowerCase();
   triggerDownload(`madmacs_${nameTag}_${dateTag}.csv`, csv, 'text/csv');
-  console.log(`[Mad MACs] Session report downloaded — ${sessionLog.length} level(s).`);
 }
 
 // ─── Ctrl+R / refresh guard ───────────────────────────────────
@@ -5870,7 +5868,6 @@ function downloadQuestionBankCSV(){
   }).join('\n');
   const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
   triggerDownload(`madmacs_questions_${dateTag}.csv`, cols+'\n'+rows, 'text/csv');
-  console.log(`[Mad MACs] Question bank exported — ${QUESTION_BANK.length} question(s).`);
 }
 
 function showExportOverlay(){
@@ -5962,7 +5959,7 @@ function showExportOverlay(){
   });
 }
 
-// Shift+Q old handler — now aliased to showTeacherPanel(0) via Shift+D alias block (TODO: remove after Shift+D testing confirmed)
+// Shift+Q old handler — now aliased to showTeacherPanel(1) via Shift+D alias block (TODO: remove after Shift+D testing confirmed)
 // document.addEventListener('keydown', e => { if(!(e.shiftKey && (e.key==='Q'||e.key==='q'))) return; if(state!=='idle') return; showExportOverlay(); });
 
 // ─── Shift+U — Question Bank CSV Upload ──────────────────────
@@ -6330,10 +6327,9 @@ function applyUploadedQuestions(questions, topicMap, mode){
   }
 
   const modeLabel = mode === 'replace' ? 'replaced' : 'merged';
-  console.log(`[Mad MACs] Question bank ${modeLabel} — ${QUESTION_BANK.length} total question(s).`);
 }
 
-// Shift+U old handler — now aliased to showTeacherPanel(1) via Shift+D alias block (TODO: remove after Shift+D testing confirmed)
+// Shift+U old handler — now aliased to showTeacherPanel(2) via Shift+D alias block (TODO: remove after Shift+D testing confirmed)
 // document.addEventListener('keydown', e => { if(!(e.shiftKey && (e.key==='U'||e.key==='u'))) return; if(state!=='idle') return; showUploadOverlay(); });
 
 // ─── HTML snippet generator ───────────────────────────────────
@@ -6388,7 +6384,6 @@ function downloadFullBankAsHTML(topicRegistry, questionBank){
 
   const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
   triggerDownload(`madmacs_questions_snippet_${dateTag}.txt`, lines.join('\n'), 'text/plain');
-  console.log(`[Mad MACs] HTML snippet exported — ${questionBank.length} question(s).`);
 }
 
 // ─── Shift+S — Species Bank CSV Export ───────────────────────
@@ -6412,9 +6407,8 @@ function downloadSpeciesBankCSV(){
   ].join(',')).join('\n');
   const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
   triggerDownload(`madmacs_species_${dateTag}.csv`, cols+'\n'+rows, 'text/csv');
-  console.log(`[Mad MACs] Species bank exported — ${HOST_SPECIES_BANK.length} species.`);
 }
-// Shift+S old handler — now aliased to showTeacherPanel(3) via Shift+D alias block (TODO: remove after Shift+D testing confirmed)
+// Shift+S old handler — now aliased to showTeacherPanel(4) via Shift+D alias block (TODO: remove after Shift+D testing confirmed)
 // document.addEventListener('keydown', e => { if(!(e.shiftKey && (e.key==='S'||e.key==='s'))) return; if(state!=='idle') return; downloadSpeciesBankCSV(); });
 
 // ─── Shift+L — Interlude Bank JSON Export ────────────────────
@@ -6423,9 +6417,8 @@ function downloadInterludeBankJSON(){
   const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
   const json = JSON.stringify(IL_BANK, null, 2);
   triggerDownload(`madmacs_interludes_${dateTag}.json`, json, 'application/json');
-  console.log(`[Mad MACs] Interlude bank exported — ${IL_BANK.length} entry/entries.`);
 }
-// Shift+L old handler — now aliased to showTeacherPanel(2) via Shift+D alias block (TODO: remove after Shift+D testing confirmed)
+// Shift+L old handler — now aliased to showTeacherPanel(3) via Shift+D alias block (TODO: remove after Shift+D testing confirmed)
 // document.addEventListener('keydown', e => { if(!(e.shiftKey && (e.key==='L'||e.key==='l'))) return; if(state!=='idle') return; downloadInterludeBankJSON(); });
 
 // ─── Shift+H — HQ Simulation Tool ───────────────────────────
@@ -6665,8 +6658,8 @@ function buildWhatToObserve(sp){
   }
   const levelHits = [specType, specType+5, specType+10].filter(l=>l<=DEEP_SIM_LEVELS).join(', ');
   if(specMod > 0)
-    return `Most microbes LOW (${sp.baseMin}–${sp.baseMax}, resistant). Microbe ${specType} spikes HIGH at levels ${levelHits} — breaks above normal range. Spike weakens only slightly with memory. Microbe 5 small bump. All others trend downward with memory.`;
-  return `Most microbes HIGH (${sp.baseMin}–${sp.baseMax}, tolerant). Microbe ${specType} dips LOW at levels ${levelHits} — breaks below normal range. Dip deepens with memory (compounding). Microbe 5 nudges higher. All others trend downward slightly with memory.`;
+    return `Most microbes LOW (${sp.baseMin}–${sp.baseMax}, non-permissive). Microbe ${specType} spikes HIGH at levels ${levelHits} — breaks above normal range. Spike weakens only slightly with memory. Microbe 5 small bump. All others trend downward with memory.`;
+  return `Most microbes HIGH (${sp.baseMin}–${sp.baseMax}, permissive). Microbe ${specType} dips LOW at levels ${levelHits} — breaks below normal range. Dip deepens with memory (compounding). Microbe 5 nudges higher. All others trend downward slightly with memory.`;
 }
 
 
@@ -6721,7 +6714,6 @@ function buildSimXLSX(results, filename){
   XLSX.utils.book_append_sheet(wb, ws, 'HQ Summary');
 
   XLSX.writeFile(wb, filename);
-  console.log(`[Mad MACs] HQ sim XLSX exported — ${results.length} species.`);
 }
 
 // ─── Shift+Y — Deep HQ Simulation picker (checkbox UI) ───────
@@ -6948,21 +6940,191 @@ function showTeacherPanel(startTab) {
   if (!ov) return;
 
   const hdr  = _btsHeader('TEACHER TOOLS');
-  const TABS = ['EXPORT QUIZ BANK', 'UPLOAD QUIZ BANK', 'INTERLUDES', 'ARCHETYPES'];
+  const TABS = ['PREVIEW QUIZ BANK', 'EXPORT QUIZ BANK', 'UPLOAD QUIZ BANK', 'INTERLUDES', 'ARCHETYPES'];
   const bar  = _btsTabBar(TABS, startTab);
 
   const area = document.createElement('div');
   area.style.cssText = 'flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:24px;';
 
-  // ── tab 0: EXPORT QUIZ BANK ──────────────────────────────────
+  // ── tab 0: PREVIEW QUIZ BANK ─────────────────────────────────
+  // Build topic list mirroring Shift+M My Quiz Topics checkbox design.
+  // All topics shown (including disabled) — teacher needs full visibility.
+  const _pqbTopics = Object.entries(TOPIC_REGISTRY).map(([id, t]) => {
+    const tid = parseInt(id);
+    const total   = QUESTION_BANK.filter(q => q.topic === tid).length;
+    const enabled = QUESTION_BANK.filter(q => q.topic === tid && q.enabled !== false).length;
+    return { id: tid, label: t.label, total, enabled, topicEnabled: t.enabled !== false };
+  });
+
+  // Build filtered question list — starts with all questions
+  let _pqbFiltered  = QUESTION_BANK.slice();
+  let _pqbIdx       = 0;
+  const _pqbExclude = new Set(); // topic IDs currently unchecked
+
+  function _pqbBuild() {
+    _pqbFiltered = QUESTION_BANK.filter(q => !_pqbExclude.has(q.topic));
+    _pqbIdx = Math.min(_pqbIdx, Math.max(0, _pqbFiltered.length - 1));
+    _pqbRender();
+    // Update count summary line — mirrors Shift+M My Quiz Topics style
+    const countEl = p0.querySelector('#pqb-count') || document.getElementById('pqb-count');
+    if (countEl) {
+      const excl  = _pqbExclude.size;
+      const total = _pqbFiltered.length;
+      countEl.textContent = excl === 0
+        ? `All topics active — ${total} question${total !== 1 ? 's' : ''} in rotation.`
+        : `${excl} topic${excl !== 1 ? 's' : ''} excluded — ${total} question${total !== 1 ? 's' : ''} in rotation.`;
+    }
+  }
+
+  function _pqbRender() {
+    const card = p0.querySelector('#pqb-card') || document.getElementById('pqb-card');
+    const nav  = p0.querySelector('#pqb-nav')  || document.getElementById('pqb-nav');
+    if (!card) return;
+    if (!_pqbFiltered.length) {
+      card.innerHTML = `<div style="font-family:'Exo 2',sans-serif;color:#2a5540;font-size:.95rem;padding:20px 0;">No questions match the current filter.</div>`;
+      if (nav) nav.innerHTML = '';
+      return;
+    }
+    const q      = _pqbFiltered[_pqbIdx];
+    const bankIdx = QUESTION_BANK.indexOf(q);
+    const topicName  = (TOPIC_REGISTRY[q.topic] || {}).label || String(q.topic);
+    const letters    = ['A','B','C','D','E'];
+    const correctLetter = letters[q.correct] || '?';
+    const enabled    = q.enabled !== false;
+    const ordered    = q.ordered === true;
+    const hasExpl    = !!(q.explanation && q.explanation.trim());
+    const hasRef     = !!(q.ref && q.ref.trim());
+
+    const metaItems = [
+      { k: 'Q',        v: `${_pqbIdx + 1} of ${_pqbFiltered.length}` },
+      { k: 'BANK #',   v: bankIdx },
+      { k: 'TOPIC',    v: `${topicName} (ID ${q.topic})` },
+      { k: 'STATUS',   v: enabled  ? '✓ Enabled'  : '✗ Disabled', col: enabled  ? '#40ffaa' : '#ff4466' },
+      { k: 'ORDERED',  v: ordered  ? 'Yes — choices fixed for students' : 'No — choices shuffled for students',
+        col: ordered ? '#ffdd44' : '#5abf8a' },
+      { k: 'CORRECT',  v: correctLetter, col: '#40ffaa' },
+      { k: 'EXPL.',    v: hasExpl  ? 'Yes' : 'No', col: hasExpl  ? '#40ffaa' : '#2a5540' },
+      { k: 'REF.',     v: hasRef   ? 'Yes' : 'No', col: hasRef   ? '#40ffaa' : '#2a5540' },
+    ];
+
+    const metaHTML = metaItems.map(m =>
+      `<span style="font-family:'Orbitron',monospace;font-size:.6rem;letter-spacing:1px;color:#2a5540;">${m.k}</span>` +
+      `<span style="font-family:'Exo 2',sans-serif;font-size:.82rem;color:${m.col||'#5abf8a'};">${m.v}</span>`
+    ).join('');
+
+    const choicesHTML = q.choices.map((c, i) => {
+      const isCorrect = i === q.correct;
+      return `<div style="
+        background:${isCorrect ? 'rgba(64,255,170,.08)' : '#060d18'};
+        border:1px solid ${isCorrect ? '#40ffaa' : 'rgba(64,255,170,.15)'};
+        border-radius:6px; padding:10px 14px;
+        font-family:'Exo 2',sans-serif; font-size:.82rem;
+        color:${isCorrect ? '#40ffaa' : '#4a9970'};
+        line-height:1.4; display:flex; gap:8px; align-items:flex-start;">
+        <span style="font-family:'Orbitron',monospace;font-size:.72rem;opacity:.55;flex-shrink:0;">${letters[i]}.</span>
+        <span>${c}</span>
+        ${isCorrect ? '<span style="font-family:\'Orbitron\',monospace;font-size:.6rem;color:#40ffaa;margin-left:auto;flex-shrink:0;">✓ CORRECT</span>' : ''}
+      </div>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;
+        padding:10px 14px;background:rgba(0,0,0,.3);border-radius:6px;
+        border:1px solid rgba(64,255,170,.1);margin-bottom:12px;align-items:baseline;">
+        ${metaHTML}
+      </div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:.95rem;line-height:1.75;
+        color:#c8e8d0;margin-bottom:14px;">${q.q}</div>
+      <div style="display:flex;flex-direction:column;gap:7px;">${choicesHTML}</div>
+      ${hasExpl ? `<div style="margin-top:12px;padding:10px 14px;border:1px solid rgba(255,221,68,.2);
+        border-radius:6px;font-family:'Exo 2',sans-serif;font-size:.82rem;color:#ccaa44;line-height:1.6;">
+        <span style="font-family:'Orbitron',monospace;font-size:.6rem;letter-spacing:1px;color:#ffdd44;display:block;margin-bottom:4px;">EXPLANATION</span>
+        ${q.explanation}</div>` : ''}
+      ${hasRef ? `<div style="margin-top:8px;padding:8px 14px;border:1px solid rgba(64,170,255,.15);
+        border-radius:6px;font-family:'Exo 2',sans-serif;font-size:.78rem;color:#3a7aaa;line-height:1.6;">
+        <span style="font-family:'Orbitron',monospace;font-size:.6rem;letter-spacing:1px;color:#44aaff;display:block;margin-bottom:2px;">REF.</span>
+        ${q.ref}</div>` : ''}
+    `;
+
+    nav.innerHTML = `
+      <button id="pqb-prev" ${_pqbIdx === 0 ? 'disabled' : ''}
+        style="font-family:'Orbitron',monospace;font-size:.68rem;font-weight:700;letter-spacing:1.5px;
+        border-radius:4px;padding:6px 16px;cursor:${_pqbIdx===0?'default':'pointer'};
+        border:2px solid #40ffaa;color:${_pqbIdx===0?'#1a4a30':'#030a14'};
+        background:${_pqbIdx===0?'transparent':'#40ffaa'};transition:opacity .15s;
+        opacity:${_pqbIdx===0?'.3':'1'};">◀ PREV</button>
+      <span style="font-family:'Orbitron',monospace;font-size:.65rem;color:#2a5540;letter-spacing:1px;">
+        ${_pqbIdx+1} / ${_pqbFiltered.length}
+      </span>
+      <button id="pqb-next" ${_pqbIdx === _pqbFiltered.length-1 ? 'disabled' : ''}
+        style="font-family:'Orbitron',monospace;font-size:.68rem;font-weight:700;letter-spacing:1.5px;
+        border-radius:4px;padding:6px 16px;cursor:${_pqbIdx===_pqbFiltered.length-1?'default':'pointer'};
+        border:2px solid #40ffaa;color:${_pqbIdx===_pqbFiltered.length-1?'#1a4a30':'#030a14'};
+        background:${_pqbIdx===_pqbFiltered.length-1?'transparent':'#40ffaa'};transition:opacity .15s;
+        opacity:${_pqbIdx===_pqbFiltered.length-1?'.3':'1'};">NEXT ▶</button>
+    `;
+
+    // Wire nav buttons — use nav already in hand, no re-query needed
+    const prevBtn = nav && nav.querySelector('#pqb-prev');
+    const nextBtn = nav && nav.querySelector('#pqb-next');
+    if (prevBtn) prevBtn.addEventListener('click', () => { if (_pqbIdx > 0) { _pqbIdx--; _pqbRender(); } });
+    if (nextBtn) nextBtn.addEventListener('click', () => { if (_pqbIdx < _pqbFiltered.length-1) { _pqbIdx++; _pqbRender(); } });
+  }
+
+  // Build topic filter rows — same checkbox design as Shift+M My Quiz Topics
+  const pqbTopicRowsHTML = _pqbTopics.map(({ id, label, total, enabled, topicEnabled }) => `
+    <label style="display:flex;align-items:center;gap:12px;cursor:pointer;
+      padding:10px 12px;border:1px solid rgba(64,255,170,.12);border-radius:4px;
+      transition:background .12s;"
+      onmouseover="this.style.background='rgba(64,255,170,.04)'"
+      onmouseout="this.style.background='transparent'">
+      <input type="checkbox" data-pqb-topic="${id}" class="pqb-cb" checked
+        style="accent-color:#40ffaa;width:15px;height:15px;flex-shrink:0;">
+      <span style="font-family:'Exo 2',sans-serif;font-size:.95rem;color:#40ffaa;flex:1;">${label}</span>
+      <span style="font-family:'Orbitron',monospace;font-size:.65rem;color:#2a7a50;white-space:nowrap;">
+        ${enabled} / ${total}${!topicEnabled ? ' <span style=\"color:#ff4466;\">disabled</span>' : ''}
+      </span>
+    </label>`).join('');
+
+  const p0 = document.createElement('div');
+  p0.style.cssText = 'flex-direction:column;gap:14px;max-width:520px;margin:0 auto;';
+  p0.innerHTML = `
+    <div style="border:1px solid rgba(64,255,170,.15);border-radius:4px;
+      padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+      <div id="pqb-card"></div>
+      <div id="pqb-nav" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;"></div>
+    </div>
+    <div style="border:1px solid rgba(64,255,170,.15);border-radius:4px;
+      padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:700;
+        letter-spacing:2px;color:#40ffaa;">FILTER BY TOPIC</div>
+      <div style="display:flex;flex-direction:column;gap:6px;" id="pqb-topic-rows">
+        ${pqbTopicRowsHTML}
+      </div>
+      <div id="pqb-count" style="font-family:'Exo 2',sans-serif;font-size:.88rem;color:#40ffaa;"></div>
+    </div>
+  `;
+
+  // ── tab 0 handlers ──
+  p0.addEventListener('change', e => {
+    const cb = e.target.closest('.pqb-cb');
+    if (!cb) return;
+    const tid = parseInt(cb.dataset.pqbTopic);
+    if (cb.checked) _pqbExclude.delete(tid);
+    else            _pqbExclude.add(tid);
+    _pqbIdx = 0;
+    _pqbBuild();
+  });
+
+  // ── tab 1: EXPORT QUIZ BANK ──────────────────────────────────
   const tq  = QUESTION_BANK.length;
   const aq  = QUESTION_BANK.filter(q => questionIsActive(q)).length;
   const tt  = Object.keys(TOPIC_REGISTRY).length;
   const at  = Object.values(TOPIC_REGISTRY).filter(t => t.enabled !== false).length;
 
-  const p0 = document.createElement('div');
-  p0.style.cssText = 'flex-direction:column;gap:16px;max-width:460px;margin:0 auto;';
-  p0.innerHTML = `
+  const p1 = document.createElement('div');
+  p1.style.cssText = 'flex-direction:column;gap:16px;max-width:460px;margin:0 auto;';
+  p1.innerHTML = `
     <div style="font-family:'Exo 2',sans-serif;font-size:1rem;color:#5abf8a;line-height:1.75;">
       <strong style="color:#40ffaa;">${tq}</strong> question(s)
       (<strong style="color:#40ffaa;">${aq}</strong> active) across
@@ -6980,10 +7142,10 @@ function showTeacherPanel(startTab) {
       'dt-html-btn','↓ HTML SNIPPET',false)}
   `;
 
-  // ── tab 1: UPLOAD QUIZ BANK ──────────────────────────────────
-  const p1 = document.createElement('div');
-  p1.style.cssText = 'flex-direction:column;gap:14px;max-width:460px;margin:0 auto;';
-  p1.innerHTML = `
+  // ── tab 2: UPLOAD QUIZ BANK ──────────────────────────────────
+  const p2 = document.createElement('div');
+  p2.style.cssText = 'flex-direction:column;gap:14px;max-width:460px;margin:0 auto;';
+  p2.innerHTML = `
     <div style="font-family:'Exo 2',sans-serif;font-size:1rem;color:#5abf8a;line-height:1.75;">
       CSV must match the <strong style="color:#40ffaa;">Export Quiz Bank</strong> format.<br>
       Required: <span style="color:#40ffaa;font-family:'Orbitron',monospace;font-size:.78rem;">topic, topic_enabled, q, choice_a–d, answer, ordered</span><br>
@@ -7043,10 +7205,10 @@ function showTeacherPanel(startTab) {
     </div>
   `;
 
-  // ── tab 2: INTERLUDES ────────────────────────────────────────
-  const p2 = document.createElement('div');
-  p2.style.cssText = 'flex-direction:column;gap:16px;max-width:460px;margin:0 auto;';
-  p2.innerHTML = `
+  // ── tab 3: INTERLUDES ────────────────────────────────────────
+  const p3 = document.createElement('div');
+  p3.style.cssText = 'flex-direction:column;gap:16px;max-width:460px;margin:0 auto;';
+  p3.innerHTML = `
     ${_btsCard('64,255,170','↓ JSON',
       'Downloads the full interlude bank as a formatted JSON file.',
       'di-json-btn','↓ JSON',true)}
@@ -7063,16 +7225,16 @@ function showTeacherPanel(startTab) {
     </div>
   `;
 
-  // ── tab 3: ARCHETYPES ────────────────────────────────────────
-  const p3 = document.createElement('div');
-  p3.style.cssText = 'flex-direction:column;gap:16px;max-width:460px;margin:0 auto;';
-  p3.innerHTML = `
+  // ── tab 4: ARCHETYPES ────────────────────────────────────────
+  const p4 = document.createElement('div');
+  p4.style.cssText = 'flex-direction:column;gap:16px;max-width:460px;margin:0 auto;';
+  p4.innerHTML = `
     ${_btsCard('64,255,170','↓ SPECIES CSV',
       `Downloads the full host species (archetype) bank as a CSV — all ${HOST_SPECIES_BANK.length} species with immune parameters, name pools, and taglines.`,
       'da-csv-btn','↓ CSV',true)}
   `;
 
-  [p0, p1, p2, p3].forEach((p, i) => {
+  [p0, p1, p2, p3, p4].forEach((p, i) => {
     p.style.display = i === startTab ? 'flex' : 'none';
     area.appendChild(p);
   });
@@ -7082,6 +7244,9 @@ function showTeacherPanel(startTab) {
   ov.appendChild(area);
   document.body.appendChild(ov);
 
+  // Initial render for tab 0 preview
+  _pqbBuild();
+
   // tab switching
   bar.addEventListener('click', e => {
     const b = e.target.closest('button[data-ti]');
@@ -7090,22 +7255,30 @@ function showTeacherPanel(startTab) {
 
   // close
   hdr.querySelector('.bts-close-x').addEventListener('click', () => ov.remove());
-  const escD = e => { if (e.key === 'Escape') { ov.remove(); document.removeEventListener('keydown', escD); } };
+  const escD = e => { if (e.key === 'Escape') { ov.remove(); document.removeEventListener('keydown', escD); document.removeEventListener('keydown', arrowD); } };
   document.addEventListener('keydown', escD);
 
-  // ── tab 0 handlers ──
-  document.getElementById('dt-save-btn').addEventListener('click', () => { downloadGameFile(); ov.remove(); });
-  document.getElementById('dt-csv-btn').addEventListener('click', () => { downloadQuestionBankCSV(); ov.remove(); });
-  document.getElementById('dt-html-btn').addEventListener('click', () => { downloadFullBankAsHTML(); ov.remove(); });
+  // Arrow keys — advance through preview when tab 0 is active
+  const arrowD = e => {
+    if (!document.getElementById('pqb-card')) return; // tab 0 not active
+    if (e.key === 'ArrowRight' && _pqbIdx < _pqbFiltered.length - 1) { _pqbIdx++; _pqbRender(); e.preventDefault(); }
+    if (e.key === 'ArrowLeft'  && _pqbIdx > 0)                        { _pqbIdx--; _pqbRender(); e.preventDefault(); }
+  };
+  document.addEventListener('keydown', arrowD);
 
   // ── tab 1 handlers ──
+  const _el = id => ov.querySelector('#' + id) || document.getElementById(id);
+  const _on = (id, ev, fn) => { const el = _el(id); if (el) el.addEventListener(ev, fn); };
+  _on('dt-save-btn', 'click', () => { downloadGameFile(); ov.remove(); });
+  _on('dt-csv-btn',  'click', () => { downloadQuestionBankCSV(); ov.remove(); });
+  _on('dt-html-btn', 'click', () => { downloadFullBankAsHTML(); ov.remove(); });
+
+  // ── tab 2 handlers ──
   let _du_q = [], _du_t = {};
 
-  document.getElementById('du-choose-btn').addEventListener('click', () => {
-    document.getElementById('du-file').click();
-  });
+  // du-choose-btn click is handled natively by its <label> wrapper — no explicit listener needed.
 
-  document.getElementById('du-file').addEventListener('change', function () {
+  _on('du-file', 'change', function () {
     const file = this.files[0];
     if (!file) return;
     document.getElementById('du-filename').textContent = file.name;
@@ -7138,7 +7311,7 @@ function showTeacherPanel(startTab) {
     reader.readAsText(file);
   });
 
-  document.getElementById('du-html-btn').addEventListener('click', () => {
+  _on('du-html-btn', 'click', () => {
     if (!_du_q.length) return;
     const mode = ov.querySelector('input[name="du-conv"]:checked').value;
     const labelToId = {};
@@ -7153,17 +7326,17 @@ function showTeacherPanel(startTab) {
     downloadFullBankAsHTML(tempTopics, bank);
   });
 
-  document.getElementById('du-load-btn').addEventListener('click', () => {
+  _on('du-load-btn', 'click', () => {
     if (!_du_q.length) return;
     const mode = ov.querySelector('input[name="du-load"]:checked').value;
     applyUploadedQuestions(_du_q, _du_t, mode);
     ov.remove();
   });
 
-  // ── tab 2 handlers ──
-  document.getElementById('di-json-btn').addEventListener('click', () => { downloadInterludeBankJSON(); ov.remove(); });
+  // ── tab 3 handlers ──
+  _on('di-json-btn', 'click', () => { downloadInterludeBankJSON(); ov.remove(); });
 
-  document.getElementById('di-preview-btn').addEventListener('click', () => {
+  _on('di-preview-btn', 'click', () => {
     ov.remove();
     // Same logic as Shift+I keydown handler — Shift+I stays as live independent shortcut
     const active = IL_BANK.map((_, i) => i).filter(i => interludeIsActive(IL_BANK[i]));
@@ -7172,8 +7345,8 @@ function showTeacherPanel(startTab) {
     _runPreview(active[_previewILIdx], `Previewing interlude ${_previewILIdx + 1}/${active.length}:`);
   });
 
-  // ── tab 3 handlers ──
-  document.getElementById('da-csv-btn').addEventListener('click', () => { downloadSpeciesBankCSV(); ov.remove(); });
+  // ── tab 4 handlers ──
+  _on('da-csv-btn', 'click', () => { downloadSpeciesBankCSV(); ov.remove(); });
 }
 
 document.addEventListener('keydown', e => {
@@ -7185,10 +7358,10 @@ document.addEventListener('keydown', e => {
 // Shift+Q/U/L/S — aliases → Shift+D tabs (TODO: remove after Shift+D testing confirmed)
 document.addEventListener('keydown', e => {
   if (!e.shiftKey || state !== 'idle') return;
-  if      (e.key === 'Q' || e.key === 'q') showTeacherPanel(0); // TODO: remove alias after Shift+D testing confirmed
-  else if (e.key === 'U' || e.key === 'u') showTeacherPanel(1); // TODO: remove alias after Shift+D testing confirmed
-  else if (e.key === 'L' || e.key === 'l') showTeacherPanel(2); // TODO: remove alias after Shift+D testing confirmed
-  else if (e.key === 'S' || e.key === 's') showTeacherPanel(3); // TODO: remove alias after Shift+D testing confirmed
+  if      (e.key === 'Q' || e.key === 'q') showTeacherPanel(1); // TODO: remove alias after Shift+D testing confirmed
+  else if (e.key === 'U' || e.key === 'u') showTeacherPanel(2); // TODO: remove alias after Shift+D testing confirmed
+  else if (e.key === 'L' || e.key === 'l') showTeacherPanel(3); // TODO: remove alias after Shift+D testing confirmed
+  else if (e.key === 'S' || e.key === 's') showTeacherPanel(4); // TODO: remove alias after Shift+D testing confirmed
 });
 
 // ── Shift+M — Student panel ───────────────────────────────────────────
@@ -7335,10 +7508,22 @@ function showStudentPanel(startTab) {
       </div>
       <div id="qt-warn" style="display:none;font-family:'Exo 2',sans-serif;
         font-size:.88rem;color:#ff7799;">Select at least one topic.</div>
-      <div id="qt-confirm" style="display:none;font-family:'Exo 2',sans-serif;
+      <div id="qt-confirm" style="font-family:'Exo 2',sans-serif;
         font-size:.88rem;color:#40ffaa;"></div>
     </div>
   `;
+
+  // Populate count summary immediately on open
+  {
+    const activeCount = QUESTION_BANK.filter(q => questionIsActive(q)).length;
+    const excl = _studentTopicExclusions.size;
+    const confirmEl = p2.querySelector('#qt-confirm');
+    if (confirmEl) {
+      confirmEl.textContent = excl === 0
+        ? `All topics active — ${activeCount} question${activeCount !== 1 ? 's' : ''} in rotation.`
+        : `${excl} topic${excl !== 1 ? 's' : ''} excluded — ${activeCount} question${activeCount !== 1 ? 's' : ''} in rotation.`;
+    }
+  }
 
   [p0, p1, p2].forEach((p, i) => {
     p.style.display = i === startTab ? 'flex' : 'none';
@@ -7691,7 +7876,6 @@ function buildAndShowHQMatrix(exposures) {
   a.click();
   document.body.removeChild(a);
   setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
-  console.log('[Mad MACs] HQ matrix downloaded — ' + nSp + ' species x ' + exposures.length + ' exposure panel(s).');
 }
 
 // ─── SheetJS lazy loader ──────────────────────────────────────
@@ -7748,14 +7932,14 @@ const ALGO_ROWS = [
   ['base_max','Highest HQ this species normally reaches.','Species-specific.'],
   ['jitter','Maximum random HQ change per level (±).','Middler uses wider jitter (±3).'],
   ['specialist_microbe','Which microbe type (1–5) triggers the specialist modifier. None if no specialist.','Species-specific.'],
-  ['specialist_mod','HQ modifier at specialist microbe. Positive = tolerance spike. Negative = resistance dip.','Currently ±5.'],
+  ['specialist_mod','HQ modifier at specialist microbe. Positive = permissive spike. Negative = non-permissive dip.','Currently ±5.'],
   ['memory_dec','HQ reduction per repeat encounter with a microbe type.','Universal: −2.'],
-  ['memory_dec_specialist','HQ reduction per repeat encounter at the specialist microbe.','Weaker: −0.5. Host is constitutively tolerant/resistant.'],
+  ['memory_dec_specialist','HQ reduction per repeat encounter at the specialist microbe.','Weaker: −0.5. Host is constitutively permissive/non-permissive.'],
   ['m5_hit','Flat HQ increase at microbe type 5.','Universal: +2.'],
   ['','',''],
   ['KEY RULE','',''],
   ['Order matters','Steps must run in order: jitter → clamp → microbe 5 → memory → specialist.','Changing the order would break specialist and memory behaviour.'],
-  ['HQ scale','0 = maximally resistant (bacteria divide slowly, easy for player). 10 = maximally tolerant (hard for player).','Scale 0–10.'],
+  ['HQ scale','0 = maximally non-permissive (bacteria divide slowly, easy for player). 10 = maximally permissive (hard for player).','Scale 0–10.'],
 ];
 
 // ─── HQ colour helpers (shared by XLSX builder) ──────────────
@@ -7890,7 +8074,6 @@ function buildDeepSimXLSX(species, filename){
     document.body.removeChild(a);
     setTimeout(()=>URL.revokeObjectURL(url),100);
   });
-  console.log(`[Mad MACs] Deep sim XLSX export started — ${species.length} species + Algorithm tab + charts.`);
 }
 
 // ─── Chart XML injection (browser-side, no Python needed) ────
@@ -7946,7 +8129,7 @@ async function injectChartsIntoXLSX(wbArray, species, filename){
       `<axPos val="l"/><majorGridlines/>`+
       `<title><tx><rich><a:bodyPr xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"/>`+
       `<a:p xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:pPr><a:defRPr/></a:pPr>`+
-      `<a:r><a:t>HQ (0=resistant, 10=tolerant)</a:t></a:r></a:p></rich></tx></title>`+
+      `<a:r><a:t>HQ (0=non-permissive, 10=permissive)</a:t></a:r></a:p></rich></tx></title>`+
       `<majorTickMark val="none"/><minorTickMark val="none"/><crossAx val="10"/></valAx>`+
       `</plotArea><legend><legendPos val="r"/></legend><plotVisOnly val="1"/><dispBlanksAs val="gap"/>`+
       `</chart></chartSpace>`;
