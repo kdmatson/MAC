@@ -13,7 +13,7 @@
 <meta name="author" content="Kevin D. Matson">
 <meta name="description" content="MAD MACs is a vintage-style educational arcade game featuring quiz elements and animated interludes that link to background sources.">
 <meta name="license" content="CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0/">
-<meta name="version" content="MADMACs v2.2 — Preview Quiz Bank tab (Shift+D tab 0) + arrow key nav + quiz choice rewrites (L987/L1021/L999/L954) + console clean 20260319">
+<meta name="version" content="MADMACs v2.3 — Session CSV on game-over + MM-006 L920 trim + alias shortcuts removed + CSV columns redesigned (viral_virulence/amr_meter/pill fields/yes-no/descriptions) 20260320">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;600&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -922,7 +922,7 @@ const QUESTION_BANK = [
     q: "What best describes the dilution effect in disease ecology?",
     choices: [
       "Higher biodiversity increases disease transmission because more hosts are available for pathogens.",
-      "Higher biodiversity reduces disease transmission because many species are poor hosts that dilute pathogen spread.",
+      "Higher biodiversity reduces transmission: many species are poor hosts, diluting pathogen spread.",
       "Disease transmission remains constant regardless of biodiversity levels.",
       "Higher biodiversity eliminates pathogens entirely from an ecosystem.",
     ],
@@ -4189,24 +4189,31 @@ function checkWin(){
   // ── Snapshot per-level data before level++ resets state ──────
   (function(){
     const mt = ((level-1)%5)+1;
-    const eaten  = pillSlots.filter(s=>s.eaten).length;
-    const missed = pillSlots.filter(s=>s.expired && !s.eaten && pillCommitted).length;
-    const skipped = (!pillCommitted && pillSlots[0] && pillSlots[0].expired) ? 1 : 0;
+    const spawned = pillSlots.filter(s=>s.spawned).length;
+    const allSkipped = (!pillCommitted && pillSlots[0] && pillSlots[0].expired) ? 'yes' : 'no';
+    const regimenDone = pillSlots.filter(s=>s.eaten).length === 3 ? 'yes' : 'no';
+    const missedNums = pillSlots
+      .map((s,i)=>({ slot:i+1, s }))
+      .filter(({slot,s}) => slot > 1 && s.spawned && !s.eaten && s.expired)
+      .map(({slot})=>slot);
+    const whichMissed = missedNums.length ? missedNums.join('&') : 'none';
     sessionLog.push({
       level:               level,
       microbeType:         mt,
-      hq:                  hostQuality,
-      pq:                  parasiteQuality,
+      hostQuality:         hostQuality,
+      parasiteQuality:     parasiteQuality,
+      amrMeter:            amrMeter,
       amrCellsSeeded:      lvlAmrCellsSeeded,
       amrAddedConjugation: lvlAmrAddedConjugation,
       amrAddedDivision:    lvlAmrAddedDivision,
       conjOpportunities:   lvlConjOpportunities,
       totalDivisions:      lvlTotalDivisions,
       divisionsNonResistant: lvlDivisionsNonResistant,
-      pillsEaten:          eaten,
-      pillsMissed:         missed,
-      pillSkipped:         skipped,
-      virusEats:           [...lvlVirusEats],  // [H1N1, H3N2, H5N1, H7N9]
+      pillsSpawned:        spawned,
+      allPillsSkipped:     allSkipped,
+      pillRegimenCompleted: regimenDone,
+      whichPillsMissed:    whichMissed,
+      virusEats:           [...lvlVirusEats],
     });
   })();
   startRainLoop('igg', 0.6, ()=>{
@@ -4275,6 +4282,39 @@ function endGame(){
   if(hostRowE) hostRowE.style.display='none';
   scaleGame();
   startRainLoop('virus', 5, null);
+  // Push a partial entry for the current in-progress level so session data
+  // is always available after game over, even on a level-1 death.
+  // Only added if this level has not already been recorded (level clear pushes its own entry).
+  const _lastLogged = sessionLog.length > 0 ? sessionLog[sessionLog.length-1].level : -1;
+  if (_lastLogged !== level) {
+    const _mt = ((level-1)%5)+1;
+    const _spawned = pillSlots ? pillSlots.filter(s=>s.spawned).length : 0;
+    const _allSkipped = (pillSlots && !pillCommitted && pillSlots[0] && pillSlots[0].expired) ? 'yes' : 'no';
+    const _missedNums = pillSlots ? pillSlots
+      .map((s,i)=>({ slot:i+1, s }))
+      .filter(({slot,s}) => slot > 1 && s.spawned && !s.eaten && s.expired)
+      .map(({slot})=>slot) : [];
+    const _whichMissed = _missedNums.length ? _missedNums.join('&') : 'none';
+    sessionLog.push({
+      level:               level,
+      microbeType:         _mt,
+      hostQuality:         hostQuality,
+      parasiteQuality:     parasiteQuality,
+      amrMeter:            amrMeter,
+      amrCellsSeeded:      lvlAmrCellsSeeded,
+      amrAddedConjugation: lvlAmrAddedConjugation,
+      amrAddedDivision:    lvlAmrAddedDivision,
+      conjOpportunities:   lvlConjOpportunities,
+      totalDivisions:      lvlTotalDivisions,
+      divisionsNonResistant: lvlDivisionsNonResistant,
+      pillsSpawned:        _spawned,
+      allPillsSkipped:     _allSkipped,
+      pillRegimenCompleted: 'no',
+      whichPillsMissed:    _whichMissed,
+      virusEats:           [...lvlVirusEats],
+      incomplete:          true,
+    });
+  }
   showGameOver();
 }
 
@@ -5769,34 +5809,62 @@ function buildSessionCSV(){
     `# Latin name,${sp ? sp.latinName : 'unknown'}`,
     `# Archetype,${sp ? sp.archetype : 'unknown'}`,
     `# Specialist microbe,${sp && sp.specialistMicrobe ? 'Microbe '+sp.specialistMicrobe+' (mod '+sp.specialistMod+')' : 'none'}`,
-    `# Session base HQ,${sessionHostBase.toFixed(2)}`,
+    `# Session base HQ,${sessionHostBase.toFixed(2)} (continuous float drawn once per session; per-level host_quality values are this base + jitter rounded to integer)`,
     `# Game score,${score}`,
     `# Quiz score,${quizScore}`,
     `# Best combi,${cachedBest}`,
-    `# Levels completed,${sessionLog.length}`,
+    `# Levels completed,${sessionLog.filter(e=>!e.incomplete).length}`,
     ...deathLog.map(d=>`# Death (${d.slot}),${d.killer} at level ${d.level}`),
     '#',
   ].join('\n');
 
   // Column headers
   const cols = [
-    'level','microbe_type','hq','pq',
+    'level','microbe_type','host_quality','viral_virulence','amr_meter',
     'amr_cells_seeded','amr_added_conjugation','amr_added_division',
     'conj_opportunities','total_divisions','divisions_nonresistant',
-    'pills_eaten','pills_missed','pill_skipped',
+    'pills_spawned','all_pills_skipped','pill_regimen_completed','which_pills_missed',
     'eaten_h1n1','eaten_h3n2','eaten_h5n1','eaten_h7n9',
+    'incomplete',
   ].join(',');
 
-  // One row per completed level
+  // One row per level; yes/no columns are strings; amr_meter ×10 → 0–10 scale
   const rows = sessionLog.map(e => [
-    e.level, e.microbeType, e.hq, e.pq,
+    e.level, e.microbeType, e.hostQuality, e.parasiteQuality,
+    (e.amrMeter * 10).toFixed(2),
     e.amrCellsSeeded, e.amrAddedConjugation, e.amrAddedDivision,
     e.conjOpportunities, e.totalDivisions, e.divisionsNonResistant,
-    e.pillsEaten, e.pillsMissed, e.pillSkipped,
-    ...(e.virusEats || [0,0,0,0]),  // graceful fallback for old log entries
+    e.pillsSpawned, e.allPillsSkipped, e.pillRegimenCompleted, e.whichPillsMissed,
+    ...(e.virusEats || [0,0,0,0]),
+    e.incomplete ? 'yes' : 'no',
   ].join(',')).join('\n');
 
-  return meta + '\n' + cols + '\n' + rows;
+  const descriptions = [
+    '',
+    '# --- COLUMN DESCRIPTIONS ---',
+    '# level,Level number (1 = first level of the game)',
+    '# microbe_type,Microbe type encountered (1=rod 2=coccus 3=diplococcus 4=spiral 5=vibrio)',
+    '# host_quality,Host permissiveness 0–10 (0=non-permissive/easy 10=permissive/hard)',
+    '# viral_virulence,Virus speed and aggression 0–10',
+    '# amr_meter,Antimicrobial resistance level 0–10 (snapshot at level end)',
+    '# amr_cells_seeded,Resistant bacteria cells placed on map at level start',
+    '# amr_added_conjugation,Resistance spread via lateral gene transfer this level',
+    '# amr_added_division,Resistance inherited via cell division this level',
+    '# conj_opportunities,Total susceptible-cell exposures to resistant neighbours across all game ticks (accumulates rapidly — thousands per level is normal)',
+    '# total_divisions,Total bacterial cell divisions this level',
+    '# divisions_nonresistant,Divisions where parent cell was susceptible',
+    '# pills_spawned,Number of antibiotic pills that appeared this level (0–3)',
+    '# all_pills_skipped,Whether pill 1 was ignored and all pills cancelled (yes/no)',
+    '# pill_regimen_completed,Whether all 3 pills were eaten (yes/no)',
+    '# which_pills_missed,Which pills appeared but were not eaten (none/2/3/2&3)',
+    '# eaten_h1n1,Times H1N1 virus was eaten by power-up this level',
+    '# eaten_h3n2,Times H3N2 virus was eaten by power-up this level',
+    '# eaten_h5n1,Times H5N1 virus was eaten by power-up this level',
+    '# eaten_h7n9,Times H7N9 virus was eaten by power-up this level',
+    '# incomplete,Whether this level ended in game over rather than completion (yes/no)',
+  ].join('\n');
+
+  return meta + '\n' + cols + '\n' + rows + descriptions;
 }
 
 function downloadGameFile(){
@@ -7355,15 +7423,6 @@ document.addEventListener('keydown', e => {
   showTeacherPanel(0);
 });
 
-// Shift+Q/U/L/S — aliases → Shift+D tabs (TODO: remove after Shift+D testing confirmed)
-document.addEventListener('keydown', e => {
-  if (!e.shiftKey || state !== 'idle') return;
-  if      (e.key === 'Q' || e.key === 'q') showTeacherPanel(1); // TODO: remove alias after Shift+D testing confirmed
-  else if (e.key === 'U' || e.key === 'u') showTeacherPanel(2); // TODO: remove alias after Shift+D testing confirmed
-  else if (e.key === 'L' || e.key === 'l') showTeacherPanel(3); // TODO: remove alias after Shift+D testing confirmed
-  else if (e.key === 'S' || e.key === 's') showTeacherPanel(4); // TODO: remove alias after Shift+D testing confirmed
-});
-
 // ── Shift+M — Student panel ───────────────────────────────────────────
 function showStudentPanel(startTab) {
   startTab = startTab || 0;
@@ -7608,14 +7667,6 @@ document.addEventListener('keydown', e => {
   showStudentPanel(0);
 });
 
-// Shift+R/H/Y — aliases → Shift+M tabs (TODO: remove after Shift+M testing confirmed)
-document.addEventListener('keydown', e => {
-  if (!e.shiftKey) return;
-  if (state !== 'idle' && state !== 'over') return;
-  if      (e.key === 'R' || e.key === 'r') showStudentPanel(0); // TODO: remove alias after Shift+M testing confirmed
-  else if (e.key === 'H' || e.key === 'h') showStudentPanel(1); // TODO: remove alias after Shift+M testing confirmed
-  else if (e.key === 'Y' || e.key === 'y') showStudentPanel(1); // TODO: remove alias after Shift+M testing confirmed
-});
 
 // ─── Multi-host × multi-parasite HQ matrix ───────────────────
 // Builds a standalone HTML page (new tab) showing one panel per selected
