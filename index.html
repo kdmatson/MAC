@@ -13,7 +13,7 @@
 <meta name="author" content="Kevin D. Matson">
 <meta name="description" content="MAD MACs is a vintage-style educational arcade game featuring quiz elements and animated interludes that link to background sources.">
 <meta name="license" content="CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0/">
-<meta name="version" content="MADMACs v2.5 — HQ/PQ continuous floats; all 3 bars 5% min fill; PQ bar corrected; gameDebug 2dp; CSV 2dp floats + descriptions updated; conj_opportunities description corrected 20260321">
+<meta name="version" content="MADMACs v2.8 — MM-008 complete (all 11 interludes active); unified TOPIC_REGISTRY; panel conflict fix; PQB count fix 20260321">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;600&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -783,16 +783,22 @@
 // ── Topic Registry ────────────────────────────────────────────────────
 // Keys are integers. Add new topics here; set enabled: false to mute an
 // entire topic without touching individual questions.
-// Topic IDs here are independent of IL_TOPIC_REGISTRY — the same integer
-// may refer to completely different subjects in each registry.
+// Topic IDs reference TOPIC_REGISTRY (unified registry for quiz and interludes).
 
+// ── Topic Registry ────────────────────────────────────────────
+// Single registry for both quiz questions and interludes.
+// quiz: true      → topic appears in quiz rotation and student/teacher topic filters
+// interlude: true → topic governs interlude visibility via interludeIsActive()
+// Imported quiz topics (via CSV upload) will lack quiz/interlude flags — treated as quiz:true by default.
 const TOPIC_REGISTRY = {
-  1:   { label: 'Antibiotic Resistance', enabled: true },
-  2:   { label: 'Disease Ecology', enabled: true },
-  3:   { label: 'Modelling', enabled: true },
-  4:   { label: 'Pandemics', enabled: true },
-  5:   { label: 'Wild Immunology', enabled: true },
-  6:   { label: 'MAD MACs', enabled: true },
+  1: { label: 'Antibiotic Resistance', quiz: true,  interlude: false, enabled: true },
+  2: { label: 'Disease Ecology',       quiz: true,  interlude: true,  enabled: true },
+  3: { label: 'Modelling',             quiz: true,  interlude: false, enabled: true },
+  4: { label: 'Pandemics',             quiz: true,  interlude: true,  enabled: true },
+  5: { label: 'Wild Immunology',       quiz: true,  interlude: true,  enabled: true },
+  6: { label: 'MAD MACs',              quiz: true,  interlude: false, enabled: true },
+  7: { label: 'Evolution',             quiz: false, interlude: true,  enabled: true },
+  8: { label: 'Viral Immunology',      quiz: false, interlude: true,  enabled: true },
 };
 
 const QUESTION_BANK = [
@@ -1251,7 +1257,7 @@ const QUESTION_BANK = [
 // ║    label   — small virus/topic tag shown above title          ║
 // ║    title   — large headline                                   ║
 // ║    msg     — one-sentence body text                           ║
-// ║    topic   — topic ID (integer key in IL_TOPIC_REGISTRY)      ║
+// ║    topic   — topic ID (integer key in TOPIC_REGISTRY)         ║
 // ║    enabled — false → exclude this individual entry            ║
 // ║              (omit field or set true to include)              ║
 // ║    anim    — animation name from IL_ANIM_CATALOG (see below)  ║
@@ -1262,6 +1268,7 @@ const QUESTION_BANK = [
 // ║                VIRUSES_ORBIT_INSIDE_MAC (2 viruses orbit in mac)   ║
 // ║                VIRAL_TAXI_SCATTER     (3 viruses exit mac)         ║
 // ║                TREATMENT_FAILS       (pills hit mac, virus survives)║
+// ║                VARIANT_REVERSAL      (mac chases H1N1 L→R; H7N9 variant chases mac R→L) ║
 // ║                CHASE_REVERSAL_A      (mac chases H1N1 L→R; H7N9 chases mac R→L) ║
 // ║                CHASE_REVERSAL_B      (H5N1 chases mac R→L; H3N2 chases mac L→R) ║
 // ║                OPSONISE             (mac eats IgG; virus opsonised then flees)  ║
@@ -1285,96 +1292,104 @@ const QUESTION_BANK = [
 // ── Interlude Topic Registry ──────────────────────────────────
 // Topic IDs here are independent of TOPIC_REGISTRY — the same integer
 // may refer to completely different subjects in each registry.
-const IL_TOPIC_REGISTRY = {
-  1: { label: 'Viral Immunology',  enabled: true },
-  // 2: { label: 'Antibiotic Resistance', enabled: true },
-  // 3: { label: 'Vaccine Science',       enabled: true },
-};
+// IL_TOPIC_REGISTRY removed — interludes now use TOPIC_REGISTRY (interlude: true entries).
 
 // Returns true if an interlude entry is active (both entry and topic enabled).
 function interludeIsActive(il){
   if(il.enabled === false) return false;
   if(il.topic !== undefined){
-    const t = IL_TOPIC_REGISTRY[il.topic];
-    if(t && t.enabled === false) return false;
+    const t = TOPIC_REGISTRY[il.topic];
+    if(!t) return false;                        // unknown topic — exclude
+    if(t.enabled === false) return false;        // topic disabled
+    if(t.interlude === false) return false;      // topic not for interludes
   }
   return true;
 }
 
 const IL_BANK = [
   {
-    topic: 1,
+    topic: 8,
     label:'HIV-1', title:'HIDDEN INSIDE',
     msg:"HIV doesn't just hide from macrophages — it lives inside them.",
     anim:'MAC_FLEES_VIRUS_PACK', accent:'#ff3355',
     link:'https://doi.org/10.3389/fmicb.2019.02828', credit:'Kruize & Kootstra (2019)',
   },
   {
-    topic: 1,
+    topic: 8,
     label:'DENGUE VIRUS', title:'HIJACKED',
     msg:"Dengue hijacks the very cells sent to destroy it.",
     anim:'VIRUS_PACK_LEADS_MAC', accent:'#ff8800',
     link:'https://doi.org/10.1128/JVI.01568-07', credit:'Blackley et al. (2007)',
   },
   {
-    topic: 1,
+    topic: 8,
     label:'INFLUENZA A', title:'FIRST RESPONSE',
     msg:"Influenza A targets lung macrophages, blunting your first line of defence.",
     anim:'MAC_PASSES_LARGE_VIRUS', accent:'#22ccff',
     link:'https://doi.org/10.1371/journal.pone.0029879', credit:'Wang et al. (2012)',
   },
   {
-    topic: 1,
+    topic: 8,
     label:'CYTOMEGALOVIRUS', title:'TROJAN HOST',
     msg:"Cytomegalovirus hitches a ride inside macrophages to spread through the body.",
     anim:'VIRUSES_ORBIT_INSIDE_MAC', accent:'#aa44ff',
     link:'https://doi.org/10.1128/JVI.78.9.4444-4453.2004', credit:'Smith et al. (2004)',
   },
   {
-    topic: 1,
+    topic: 8,
     label:'VIRAL DISSEMINATION', title:'VIRAL TAXI',
     msg:"Infected macrophages become viral taxis — carrying infection across tissue barriers.",
     anim:'VIRAL_TAXI_SCATTER', accent:'#44ffcc',
     link:'https://doi.org/10.1128/JVI.78.9.4444-4453.2004', credit:'Smith et al. (2004)',
   },
   {
-    topic: 1,
+    topic: 8,
     label:'HIV-1 PERSISTENCE', title:'TREATMENT FAILS',
     msg:"HIV persists for years inside macrophages, invisible to treatment.",
     anim:'TREATMENT_FAILS', accent:'#ffdd44',
     link:'https://doi.org/10.3389/fmicb.2019.02828', credit:'Kruize & Kootstra (2019)',
   },
   {
-    topic: 1,
-    enabled: false,
-    label:'PLACEHOLDER 1', title:'CHASE REVERSAL A',
-    msg:"Placeholder text 1 — to be replaced with real interlude copy.",
+    topic: 7,
+    enabled: true,
+    label:'VIRAL VARIANTS',
+    title:'GOING VIRAL WITH DARWIN',
+    msg:"No fixed origin — only change shaped by chance and environment. Viruses, including SARS-CoV-2, follow the same rule: variants that evade and persist survive.",
+    anim:'VARIANT_REVERSAL', accent:'#ff3355',
+    link:'https://doi.org/10.1016/j.envres.2021.112173',
+    credit:'Frutos et al. (2022)',
+  },
+  {
+    topic: 4,
+    enabled: true,
+    label:'PANDEMICS', title:'GOING THE DISTANCE',
+    msg:"Pandemics are defined by geographic reach and movement — spreading from place to place, region to region, as traced for centuries from plague to influenza to HIV.",
     anim:'CHASE_REVERSAL_A', accent:'#ff3355',
-    link:'https://www.nytimes.com', credit:'Placeholder ref (NYT)',
+    link:'https://www.jstor.org/stable/27794175', credit:'Morens et al. (2009)',
   },
   {
-    topic: 1,
-    enabled: false,
-    label:'PLACEHOLDER 2', title:'CHASE REVERSAL B',
-    msg:"Placeholder text 2 — to be replaced with real interlude copy.",
+    topic: 2,
+    enabled: true,
+    label:'TICK-BORNE ENCEPHALITIS', title:'FEEDING WITH A FRIEND',
+    msg:"Cofeeding — ticks feeding simultaneously and in close proximity on the same host — is important for TBEV transmission in the Netherlands and elsewhere.",
     anim:'CHASE_REVERSAL_B', accent:'#aa44ff',
-    link:'https://www.nytimes.com', credit:'Placeholder ref (NYT)',
+    link:'https://doi.org/10.3201/eid2812.220552', credit:'Esser et al. (2022)',
   },
   {
-    topic: 1,
-    enabled: false,
-    label:'PLACEHOLDER 3', title:'OPSONISE',
-    msg:"Placeholder text 3 — to be replaced with real interlude copy.",
+    topic: 5,
+    enabled: true,
+    label:'WILD IMMUNOLOGY', title:'THANKS FOR THE COMPLEMENT',
+    msg:"Opsonins mark pathogens for phagocytosis. Antibodies do it — but so does the extraordinarily complex complement system. Deficiencies leave hosts dangerously undefended.",
     anim:'OPSONISE', accent:'#22ccff',
-    link:'https://www.nytimes.com', credit:'Placeholder ref (NYT)',
+    link:'https://doi.org/10.1016/j.coi.2025.102711', credit:'Blanco et al. (2025)',
   },
   {
-    topic: 1,
-    enabled: false,
-    label:'PLACEHOLDER 4', title:'ENGULF',
-    msg:"Placeholder text 4 — to be replaced with real interlude copy.",
+    topic: 5,
+    enabled: true,
+    label:'WILD IMMUNOLOGY', title:'SNACK ATTACK, IN VITRO',
+    msg:"Bacterial killing assays measure immune function in wild animals. When whole blood, not just plasma, is used, phagocytic cells do part of the work.",
     anim:'ENGULF', accent:'#ff8800',
-    link:'https://www.nytimes.com', credit:'Placeholder ref (NYT)',
+    link:'https://doi.org/10.1086/501057', credit:'Matson et al. (2006)',
   },
 ];
 // ╔══════════════════════════════════════════════════════════════════════╗
@@ -2137,6 +2152,28 @@ const IL_ANIM_CATALOG = {
     }
   },
 
+  VARIANT_REVERSAL(ic,t,W,H,accent){
+    // Act 1 (0-4.5s): Mac chases H1N1 (red) L->R — virus AHEAD (right), mac BEHIND (left)
+    // Act 2 (4.5-9s): H7N9 (cyan) chases mac R->L — mac AHEAD (left), virus BEHIND (right)
+    const CY=H/2, T1=4.5, T2=9.0, GAP=60, EDGE=14;
+    if(t<T1){
+      // Act 1: virus leads L->R; both enter from left, exit right
+      const leadX=ilLerp(-EDGE, W+EDGE+GAP, t/T1);
+      const macX=leadX-GAP;
+      ic.save(); ic.translate(macX, CY+Math.sin(t*2.8)*5);
+      ilDrawMacrophage(ic,t,0); ic.restore();
+      ic.save(); ic.translate(leadX, CY+Math.sin(t*3.2)*9);
+      ilDrawVirus(ic,t,'#ff3355',1); ic.restore();
+    } else if(t<T2){
+      // Act 2: mac leads R->L; both enter from right, fully exit left
+      const macX=ilLerp(W+EDGE+GAP, -EDGE-GAP, (t-T1)/(T2-T1));
+      const virusX=macX+GAP;
+      ic.save(); ic.translate(macX, CY+Math.sin(t*2.8)*5);
+      ilDrawMacrophage(ic,t,Math.PI); ic.restore();
+      ic.save(); ic.translate(virusX, CY+Math.sin(t*3.2)*9);
+      ilDrawVirus(ic,t,'#22ccff',-1); ic.restore();
+    }
+  },
   CHASE_REVERSAL_A(ic,t,W,H,accent){
     // Act 1 (0–4.5s): mac chases H1N1 (red) L→R — mac behind, virus ahead by V_LEAD
     // Act 2 (4.5–9s): H7N9 (cyan) chases mac R→L — virus behind, mac ahead by V_LEAD
@@ -2183,6 +2220,7 @@ const IL_ANIM_CATALOG = {
     }
   },
 
+  
 };
 // ── End IL_ANIM_CATALOG ───────────────────────────────────────
 
@@ -2466,6 +2504,7 @@ function questionIsActive(q){
   if(q.topic !== undefined){
     const t = TOPIC_REGISTRY[q.topic];
     if(t && t.enabled === false) return false;
+    if(t && t.quiz === false) return false;      // topic not for quiz (e.g. interlude-only topics)
     // Student session exclusion — overrides without touching TOPIC_REGISTRY
     if(_studentTopicExclusions.has(q.topic)) return false;
   }
@@ -5954,8 +5993,8 @@ function showExportOverlay(){
 
   const totalQ   = QUESTION_BANK.length;
   const activeQ  = QUESTION_BANK.filter(q => questionIsActive(q)).length;
-  const totalT   = Object.keys(TOPIC_REGISTRY).length;
-  const activeT  = Object.values(TOPIC_REGISTRY).filter(t => t.enabled !== false).length;
+  const totalT   = Object.values(TOPIC_REGISTRY).filter(t => t.quiz !== false).length;
+  const activeT  = Object.values(TOPIC_REGISTRY).filter(t => t.enabled !== false && t.quiz !== false).length;
 
   overlay.innerHTML = `
     <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;
@@ -7006,6 +7045,9 @@ function _btsCard(accentColor, title, bodyHTML, btnId, btnLabel, btnSolid) {
 // ── Shift+D — Teacher panel ───────────────────────────────────────────
 function showTeacherPanel(startTab) {
   startTab = startTab || 0;
+  // Close student panel if open — prevent two panels on screen simultaneously
+  const otherPanel = document.getElementById('bts-student');
+  if (otherPanel) otherPanel.remove();
   const ov = _btsGetOrCreate('bts-teacher');
   if (!ov) return;
 
@@ -7041,8 +7083,8 @@ function showTeacherPanel(startTab) {
       const excl  = _pqbExclude.size;
       const total = _pqbFiltered.length;
       countEl.textContent = excl === 0
-        ? `All topics active — ${total} question${total !== 1 ? 's' : ''} in rotation.`
-        : `${excl} topic${excl !== 1 ? 's' : ''} excluded — ${total} question${total !== 1 ? 's' : ''} in rotation.`;
+        ? `All topics active — ${total} question${total !== 1 ? 's' : ''} in total.`
+        : `${excl} topic${excl !== 1 ? 's' : ''} excluded — ${total} question${total !== 1 ? 's' : ''} in total.`;
     }
   }
 
@@ -7152,7 +7194,7 @@ function showTeacherPanel(startTab) {
         style="accent-color:#40ffaa;width:15px;height:15px;flex-shrink:0;">
       <span style="font-family:'Exo 2',sans-serif;font-size:.95rem;color:#40ffaa;flex:1;">${label}</span>
       <span style="font-family:'Orbitron',monospace;font-size:.65rem;color:#2a7a50;white-space:nowrap;">
-        ${enabled} / ${total}${!topicEnabled ? ' <span style=\"color:#ff4466;\">disabled</span>' : ''}
+        ${total}${!topicEnabled ? ' <span style=\"color:#ff4466;\">disabled</span>' : ''}
       </span>
     </label>`).join('');
 
@@ -7189,8 +7231,8 @@ function showTeacherPanel(startTab) {
   // ── tab 1: EXPORT QUIZ BANK ──────────────────────────────────
   const tq  = QUESTION_BANK.length;
   const aq  = QUESTION_BANK.filter(q => questionIsActive(q)).length;
-  const tt  = Object.keys(TOPIC_REGISTRY).length;
-  const at  = Object.values(TOPIC_REGISTRY).filter(t => t.enabled !== false).length;
+  const tt  = Object.values(TOPIC_REGISTRY).filter(t => t.quiz !== false).length;
+  const at  = Object.values(TOPIC_REGISTRY).filter(t => t.enabled !== false && t.quiz !== false).length;
 
   const p1 = document.createElement('div');
   p1.style.cssText = 'flex-direction:column;gap:16px;max-width:460px;margin:0 auto;';
@@ -7428,6 +7470,9 @@ document.addEventListener('keydown', e => {
 // ── Shift+M — Student panel ───────────────────────────────────────────
 function showStudentPanel(startTab) {
   startTab = startTab || 0;
+  // Close teacher panel if open — prevent two panels on screen simultaneously
+  const otherPanel = document.getElementById('bts-teacher');
+  if (otherPanel) otherPanel.remove();
   const ov = _btsGetOrCreate('bts-student');
   if (!ov) return;
 
@@ -7526,7 +7571,7 @@ function showStudentPanel(startTab) {
 
   // Gather enabled topics and count active questions per topic
   const enabledTopics = Object.entries(TOPIC_REGISTRY)
-    .filter(([, t]) => t.enabled !== false)
+    .filter(([, t]) => t.enabled !== false && t.quiz !== false)
     .map(([id, t]) => {
       const tid = parseInt(id);
       const qCount = QUESTION_BANK.filter(q =>
