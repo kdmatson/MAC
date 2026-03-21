@@ -13,7 +13,7 @@
 <meta name="author" content="Kevin D. Matson">
 <meta name="description" content="MAD MACs is a vintage-style educational arcade game featuring quiz elements and animated interludes that link to background sources.">
 <meta name="license" content="CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0/">
-<meta name="version" content="MADMACs v2.3 — Session CSV on game-over + MM-006 L920 trim + alias shortcuts removed + CSV columns redesigned (viral_virulence/amr_meter/pill fields/yes-no/descriptions) 20260320">
+<meta name="version" content="MADMACs v2.5 — HQ/PQ continuous floats; all 3 bars 5% min fill; PQ bar corrected; gameDebug 2dp; CSV 2dp floats + descriptions updated; conj_opportunities description corrected 20260321">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;600&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -3518,7 +3518,7 @@ function updateAMRBar(pulse){
   const fill    = document.getElementById('amr-fill');
   if(!barWrap||!fill) return;
   barWrap.style.display = 'block';
-  const pct = Math.max(0.04, amrMeter);
+  const pct = Math.max(0.05, amrMeter);
   fill.style.width = (pct*100)+'%';
   const r2 = Math.round(50  + pct*205);
   const g2 = Math.round(200 - pct*180);
@@ -3534,8 +3534,7 @@ window.gameDebug = window.amrDebug = function(){
   const vScatter = (Math.max(0.03, 0.40 - parasiteQuality * 0.037) * 100).toFixed(1);
   const vFright  = ((0.55 - parasiteQuality * 0.025) * 100).toFixed(1);
   const hqFactor = 1 - (hostQuality - 5) / 12;
-  const lvlFactor = Math.max(0.25, 1 - (level - 1) * 0.12);
-  const gInterval = Math.max(1.0, Math.min(12.0, 8 * hqFactor * lvlFactor)).toFixed(2);
+  const gInterval = Math.max(1.0, Math.min(12.0, 8 * hqFactor)).toFixed(2);
   console.log('═══ GAME DEBUG ═══');
   console.log('  ── Host ──');
   console.log(`  species:          ${currentSpecies ? currentSpecies.commonName : '—'} (${currentSpecies ? currentSpecies.archetype : '—'})`);
@@ -3545,8 +3544,8 @@ window.gameDebug = window.amrDebug = function(){
   console.log('  ── Level ──');
   console.log(`  level:            ${level}`);
   console.log(`  microbe type:     ${((level-1)%5)+1}`);
-  console.log(`  hostQuality:      ${hostQuality} / 10`);
-  console.log(`  parasiteQuality:  ${parasiteQuality} / 10`);
+  console.log(`  hostQuality:      ${hostQuality.toFixed(2)} / 10`);
+  console.log(`  parasiteQuality:  ${parasiteQuality.toFixed(2)} / 10`);
   console.log('  ── Virus ──');
   console.log(`  speed:            ${vSpeed}  (base 0.80, max ~1.91)`);
   console.log(`  scatter chance:   ${vScatter}%  (lower = more deliberate hunting)`);
@@ -3601,22 +3600,24 @@ function rollHostQuality(){
   // Step 9 — Store memory for next encounter with this microbe type
   microbe_memory[microbeType] = hq;
 
-  return Math.round(hq);
+  return hq; // continuous float — no rounding
 }
 
-// parasiteQuality: strong level trend + small jitter ±0.8, clamped 0–10
+// parasiteQuality: strong level trend + continuous jitter ±0.8, clamped 0–10
 function rollParasiteQuality(){
   const levelSlope = (level - 1) * 0.9;
   const jitter = (Math.random() - 0.5) * 1.6; // ±0.8
-  return Math.round(Math.max(0, Math.min(10, levelSlope + jitter)));
+  return Math.max(0, Math.min(10, levelSlope + jitter)); // continuous float — no rounding
 }
 
 // Growth interval driven by hostQuality
 // Base 8s at hq=5; faster at higher hq, also accelerates with level
 function growthInterval(){
+  // Growth speed driven by HQ only — no independent level ramp.
+  // Level difficulty is carried by PQ (virus aggression), which already scales with level.
+  // HQ=0 → ~11.3s (slow, non-permissive), HQ=5 → 8.0s (neutral), HQ=10 → 4.3s (fast, permissive)
   const hqFactor = 1 - (hostQuality - 5) / 12;
-  const lvlFactor = Math.max(0.25, 1 - (level - 1) * 0.12);
-  return Math.max(1.0, Math.min(12.0, 8 * hqFactor * lvlFactor));
+  return Math.max(1.0, Math.min(12.0, 8 * hqFactor));
 }
 
 // Virus speed driven by parasiteQuality: 0.8 (benign) → 2.2 (aggressive)
@@ -5318,9 +5319,8 @@ function updateHQBar(pulse){
   const fill = document.getElementById('hq-fill');
   if(!barWrap||!fill) return;
   barWrap.style.display = 'block';
-  const interval = growthInterval();
-  const MIN_I = 1.0, MAX_I = 12.0;
-  const pct = 1 - (interval - MIN_I) / (MAX_I - MIN_I);
+  // hostQuality is continuous 0–10; min 5% fill so bar never appears empty.
+  const pct = Math.max(0.05, hostQuality / 10);
   fill.style.width = (pct * 100) + '%';
   const r2 = Math.round(50 + pct * 205);
   const g2 = Math.round(220 - pct * 180);
@@ -5334,7 +5334,8 @@ function updatePQBar(pulse){
   const fill = document.getElementById('pq-fill');
   if(!barWrap||!fill) return;
   barWrap.style.display = 'block';
-  const pct = (parasiteQuality + 1) / 11;
+  // parasiteQuality is continuous 0–10; min 5% fill so bar never appears empty.
+  const pct = Math.max(0.05, parasiteQuality / 10);
   const r2 = Math.round(50 + pct * 205);
   const g2 = Math.round(210 - pct * 180);
   fill.style.width = (pct*100)+'%';
@@ -5809,7 +5810,7 @@ function buildSessionCSV(){
     `# Latin name,${sp ? sp.latinName : 'unknown'}`,
     `# Archetype,${sp ? sp.archetype : 'unknown'}`,
     `# Specialist microbe,${sp && sp.specialistMicrobe ? 'Microbe '+sp.specialistMicrobe+' (mod '+sp.specialistMod+')' : 'none'}`,
-    `# Session base HQ,${sessionHostBase.toFixed(2)} (continuous float drawn once per session; per-level host_quality values are this base + jitter rounded to integer)`,
+    `# Session base HQ,${sessionHostBase.toFixed(2)} (continuous float drawn once per session; per-level host_quality values are this base + jitter, both continuous floats)`,
     `# Game score,${score}`,
     `# Quiz score,${quizScore}`,
     `# Best combi,${cachedBest}`,
@@ -5828,9 +5829,10 @@ function buildSessionCSV(){
     'incomplete',
   ].join(',');
 
-  // One row per level; yes/no columns are strings; amr_meter ×10 → 0–10 scale
+  // One row per level; yes/no columns are strings; hq/pq/amr all continuous floats to 2dp on 0–10 scale
   const rows = sessionLog.map(e => [
-    e.level, e.microbeType, e.hostQuality, e.parasiteQuality,
+    e.level, e.microbeType,
+    (e.hostQuality).toFixed(2), (e.parasiteQuality).toFixed(2),
     (e.amrMeter * 10).toFixed(2),
     e.amrCellsSeeded, e.amrAddedConjugation, e.amrAddedDivision,
     e.conjOpportunities, e.totalDivisions, e.divisionsNonResistant,
@@ -5844,13 +5846,13 @@ function buildSessionCSV(){
     '# --- COLUMN DESCRIPTIONS ---',
     '# level,Level number (1 = first level of the game)',
     '# microbe_type,Microbe type encountered (1=rod 2=coccus 3=diplococcus 4=spiral 5=vibrio)',
-    '# host_quality,Host permissiveness 0–10 (0=non-permissive/easy 10=permissive/hard)',
-    '# viral_virulence,Virus speed and aggression 0–10',
-    '# amr_meter,Antimicrobial resistance level 0–10 (snapshot at level end)',
+    '# host_quality,Host permissiveness 0.00–10.00 (continuous float; 0=non-permissive/easy 10=permissive/hard); directly sets bacterial growth speed — immunological memory drives this down over levels',
+    '# viral_virulence,Virus speed and aggression 0.00–10.00 (continuous float; increases with level)',
+    '# amr_meter,Antimicrobial resistance level 0.00–10.00 (continuous float; snapshot at level end)',
     '# amr_cells_seeded,Resistant bacteria cells placed on map at level start',
     '# amr_added_conjugation,Resistance spread via lateral gene transfer this level',
     '# amr_added_division,Resistance inherited via cell division this level',
-    '# conj_opportunities,Total susceptible-cell exposures to resistant neighbours across all game ticks (accumulates rapidly — thousands per level is normal)',
+    '# conj_opportunities,Total susceptible-cell exposures to resistant neighbours across all growth ticks; typically tens to low hundreds depending on map density, AMR level, and host species (higher HQ = faster ticks = more opportunities)',
     '# total_divisions,Total bacterial cell divisions this level',
     '# divisions_nonresistant,Divisions where parent cell was susceptible',
     '# pills_spawned,Number of antibiotic pills that appeared this level (0–3)',
