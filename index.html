@@ -13,7 +13,7 @@
 <meta name="author" content="Kevin D. Matson">
 <meta name="description" content="MAD MACs is a vintage-style educational arcade game featuring quiz elements and animated interludes that link to background sources.">
 <meta name="license" content="CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0/">
-<meta name="version" content="MADMACs v2.8 — MM-008 complete (all 11 interludes active); unified TOPIC_REGISTRY; panel conflict fix; PQB count fix 20260321">
+<meta name="version" content="MADMACs v2.14 — session 4 complete: panel nav, downloads, interlude preview; audit clean 20260321">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;600&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -557,6 +557,7 @@
   </div>
   <!-- Interlude cutscene panel -->
   <div id="interlude-overlay">
+    <button id="il-preview-close" style="display:none;position:absolute;top:8px;right:10px;font-family:'Orbitron',monospace;font-size:.52rem;letter-spacing:1px;background:none;border:1px solid rgba(64,255,170,.25);color:#2a5540;padding:3px 9px;cursor:pointer;border-radius:3px;z-index:1;" title="Back to Interludes tab">✕ CLOSE</button>
     <div id="il-top-bar"></div>
     <div id="il-canvas-wrap"><canvas id="il-canvas"></canvas></div>
     <div id="il-text-area">
@@ -5770,18 +5771,48 @@ let _previewILIdx = -1;
 
 // Shared preview runner — shows a specific IL_BANK entry by index directly,
 // bypassing showInterlude()'s random-pick and repeat-avoidance logic entirely.
-function _runPreview(idx, label){
+// onDone: optional callback fired when NEXT ▶ is clicked or ✕/Escape is used.
+function _runPreview(idx, label, onDone){
   if(idx < 0 || idx >= IL_BANK.length){
     console.warn(`[Mad MACs] IL_BANK index ${idx} out of range (0–${IL_BANK.length-1}).`);
     return;
   }
   ilInit();
-  ilOnDone = null; // no follow-on action after preview
   ilLastIdx = idx;
 
   const il = IL_BANK[idx];
   const animFn = IL_ANIM_CATALOG[il.anim];
   const overlay = document.getElementById('interlude-overlay');
+
+  // ── Panel-preview mode: lift overlay above the BTS panel (z-index 210) ──
+  // Reparent to document.body as position:fixed so it renders above everything.
+  // On exit (✕, Escape, or NEXT ▶) restore to original parent (#wrap) and styles.
+  const _panelPreview = typeof onDone === 'function';
+  let _originalParent = null;
+  let _originalNextSibling = null;
+  function _restoreOverlay(){
+    if(!_panelPreview) return;
+    overlay.style.position = '';
+    overlay.style.zIndex   = '';
+    overlay.style.borderRadius = '';
+    if(_originalParent){
+      if(_originalNextSibling) _originalParent.insertBefore(overlay, _originalNextSibling);
+      else _originalParent.appendChild(overlay);
+    }
+  }
+  if(_panelPreview){
+    _originalParent      = overlay.parentNode;
+    _originalNextSibling = overlay.nextSibling;
+    document.body.appendChild(overlay);
+    overlay.style.position    = 'fixed';
+    overlay.style.zIndex      = '220';
+    overlay.style.borderRadius = '0';
+  }
+
+  // Wrap onDone so overlay is always restored before reopening the panel
+  const _wrappedDone = _panelPreview ? () => { _restoreOverlay(); onDone(); } : null;
+  ilOnDone = _wrappedDone;
+
   overlay.style.setProperty('--il-accent', il.accent);
   document.getElementById('il-label').textContent = il.label;
   document.getElementById('il-title').textContent = il.title;
@@ -5794,6 +5825,27 @@ function _runPreview(idx, label){
   else        { btnLearn.href = '#';    btnLearn.classList.add('no-link'); }
   document.getElementById('il-ref-text').textContent = 'LEARN MORE';
   creditEl.textContent = il.credit || '';
+
+  // Show/hide ✕ close button — only in panel-preview mode
+  const closeBtn = document.getElementById('il-preview-close');
+  if(closeBtn){
+    if(_panelPreview){
+      closeBtn.style.display = 'block';
+      closeBtn.onclick = () => { ilAbort(); _restoreOverlay(); onDone(); };
+    } else {
+      closeBtn.style.display = 'none';
+      closeBtn.onclick = null;
+    }
+  }
+  // Escape key handler — only active for this preview run
+  function _ilPreviewEsc(e){
+    if(e.key !== 'Escape') return;
+    if(!document.getElementById('interlude-overlay').classList.contains('active')) return;
+    document.removeEventListener('keydown', _ilPreviewEsc);
+    if(_panelPreview){ ilAbort(); _restoreOverlay(); onDone(); }
+    else { ilAbort(); }
+  }
+  document.addEventListener('keydown', _ilPreviewEsc);
 
   overlay.classList.add('active');
   const ilWrap = document.getElementById('il-canvas-wrap');
@@ -6644,7 +6696,7 @@ function showHQSimOverlay(){
       <thead>
         <tr style="border-bottom:1px solid #1a4a30;">
           <th style="padding:4px 8px;text-align:left;font-size:.58rem;color:#2a7a50;white-space:nowrap;">SPECIES</th>
-          <th style="padding:4px 6px;text-align:left;font-size:.58rem;color:#2a7a50;">ARCH.</th>
+          <th style="padding:4px 6px;text-align:left;font-size:.58rem;color:#2a7a50;">Archetype</th>
   `;
   for(let l=1;l<=SIM_LEVELS;l++){
     const mt = microbeLabels[((l-1)%5)+1];
@@ -6658,8 +6710,8 @@ function showHQSimOverlay(){
   results.forEach(({sp, byLevel}, i) => {
     const bg = i%2===0 ? 'rgba(0,40,20,0.3)' : 'transparent';
     tableHTML += `<tr style="background:${bg};border-bottom:1px solid rgba(26,74,48,0.4)">`;
-    tableHTML += `<td style="padding:3px 8px;font-size:.62rem;white-space:nowrap;color:#40ffaa;">${sp.commonName}</td>`;
-    tableHTML += `<td style="padding:3px 6px;font-size:.55rem;color:#2a7a50;white-space:nowrap;">${sp.archetype.replace('Universally ','').replace('Specialist','Spec.')}</td>`;
+    tableHTML += `<td style="padding:3px 8px;font-size:.62rem;white-space:nowrap;color:#40ffaa;">${sp.commonName}<br><span style="font-style:italic;font-size:.52rem;color:#2a7a50;">${sp.latinName}</span></td>`;
+    tableHTML += `<td style="padding:3px 6px;font-size:.55rem;color:#2a7a50;white-space:nowrap;">${sp.archetype.charAt(0).toUpperCase() + sp.archetype.slice(1)}</td>`;
     byLevel.forEach(r => {
       tableHTML += `<td style="padding:2px 3px;text-align:center;">
         <div style="font-size:.65rem;font-weight:700;color:${hqColor(r.mean)}">${r.mean.toFixed(1)}</div>
@@ -6690,7 +6742,7 @@ function showHQSimOverlay(){
 
   document.body.appendChild(overlay);
 
-  document.getElementById('hq-sim-close').addEventListener('click', () => overlay.remove());
+  document.getElementById('hq-sim-close').addEventListener('click', () => { overlay.remove(); showStudentPanel(1); });
   document.getElementById('hq-sim-csv').addEventListener('click', () => {
     const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
     triggerDownload(`madmacs_hqsim_${dateTag}.csv`, buildSimCSV(results), 'text/csv');
@@ -6843,14 +6895,15 @@ function showDeepSimPicker(){
 
   const listItems = enabledSpecies.map((sp,i) => `
     <label class="dsp-row" style="
-      padding:6px 14px;cursor:pointer;font-size:.62rem;letter-spacing:1px;
-      border:1px solid transparent;display:flex;align-items:center;gap:10px;
+      padding:4px 14px;cursor:pointer;font-size:.62rem;letter-spacing:1px;
+      border:1px solid transparent;display:grid;
+      grid-template-columns:16px 1fr 1fr 1fr;align-items:center;gap:10px;
       transition:background .1s;
     ">
-      <input type="checkbox" data-idx="${i}" class="dsp-cb" style="accent-color:#40ffaa;width:13px;height:13px;flex-shrink:0;">
-      <span style="color:#40ffaa;flex:1">${sp.commonName}</span>
-      <span style="color:#2a7a50;font-size:.52rem;">${sp.latinName}</span>
-      <span style="color:#1a6a40;font-size:.5rem;min-width:90px;text-align:right;">${sp.archetype}</span>
+      <input type="checkbox" data-idx="${i}" class="dsp-cb" style="accent-color:#40ffaa;width:13px;height:13px;">
+      <span style="color:#40ffaa;text-align:left;">${sp.commonName}</span>
+      <span style="color:#2a7a50;font-size:.52rem;font-style:italic;text-align:left;">${sp.latinName}</span>
+      <span style="color:#1a6a40;font-size:.5rem;text-align:left;">${sp.archetype}</span>
     </label>`).join('');
 
   overlay.innerHTML = `
@@ -6925,7 +6978,7 @@ function showDeepSimPicker(){
     const dateTag = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
     triggerDownload(`madmacs_add_charts_${dateTag}.py`, buildChartScript(sel), 'text/plain');
   });
-  document.getElementById('dsp-close').addEventListener('click', ()=> overlay.remove());
+  document.getElementById('dsp-close').addEventListener('click', ()=>{ overlay.remove(); showStudentPanel(1); });
 }
 
 // Shift+Y old handler — now aliased to showStudentPanel(1) via Shift+M alias block (TODO: remove after Shift+M testing confirmed)
@@ -7366,8 +7419,8 @@ function showTeacherPanel(startTab) {
   });
 
   // close
-  hdr.querySelector('.bts-close-x').addEventListener('click', () => ov.remove());
-  const escD = e => { if (e.key === 'Escape') { ov.remove(); document.removeEventListener('keydown', escD); document.removeEventListener('keydown', arrowD); } };
+  hdr.querySelector('.bts-close-x').addEventListener('click', () => { ov.remove(); returnToStart(); });
+  const escD = e => { if (e.key === 'Escape') { ov.remove(); document.removeEventListener('keydown', escD); document.removeEventListener('keydown', arrowD); returnToStart(); } };
   document.addEventListener('keydown', escD);
 
   // Arrow keys — advance through preview when tab 0 is active
@@ -7381,9 +7434,9 @@ function showTeacherPanel(startTab) {
   // ── tab 1 handlers ──
   const _el = id => ov.querySelector('#' + id) || document.getElementById(id);
   const _on = (id, ev, fn) => { const el = _el(id); if (el) el.addEventListener(ev, fn); };
-  _on('dt-save-btn', 'click', () => { downloadGameFile(); ov.remove(); });
-  _on('dt-csv-btn',  'click', () => { downloadQuestionBankCSV(); ov.remove(); });
-  _on('dt-html-btn', 'click', () => { downloadFullBankAsHTML(); ov.remove(); });
+  _on('dt-save-btn', 'click', () => { downloadGameFile(); });
+  _on('dt-csv-btn',  'click', () => { downloadQuestionBankCSV(); });
+  _on('dt-html-btn', 'click', () => { downloadFullBankAsHTML(); });
 
   // ── tab 2 handlers ──
   let _du_q = [], _du_t = {};
@@ -7446,19 +7499,23 @@ function showTeacherPanel(startTab) {
   });
 
   // ── tab 3 handlers ──
-  _on('di-json-btn', 'click', () => { downloadInterludeBankJSON(); ov.remove(); });
+  _on('di-json-btn', 'click', () => { downloadInterludeBankJSON(); });
 
   _on('di-preview-btn', 'click', () => {
-    ov.remove();
-    // Same logic as Shift+I keydown handler — Shift+I stays as live independent shortcut
+    // Do NOT close the panel — it stays open behind the interlude overlay.
+    // NEXT ▶ and ✕/Escape both return to Shift+D tab 3.
     const active = IL_BANK.map((_, i) => i).filter(i => interludeIsActive(IL_BANK[i]));
     if (!active.length) { console.warn('[Mad MACs] No active interludes to preview.'); return; }
     _previewILIdx = (_previewILIdx + 1) % active.length;
-    _runPreview(active[_previewILIdx], `Previewing interlude ${_previewILIdx + 1}/${active.length}:`);
+    _runPreview(active[_previewILIdx], `Previewing interlude ${_previewILIdx + 1}/${active.length}:`, () => {
+      const existing = document.getElementById('bts-teacher');
+      if(existing) existing.remove();
+      showTeacherPanel(3);
+    });
   });
 
   // ── tab 4 handlers ──
-  _on('da-csv-btn', 'click', () => { downloadSpeciesBankCSV(); ov.remove(); });
+  _on('da-csv-btn', 'click', () => { downloadSpeciesBankCSV(); });
 }
 
 document.addEventListener('keydown', e => {
@@ -7646,13 +7703,13 @@ function showStudentPanel(startTab) {
     if (b) _btsActivate(bar, area, parseInt(b.dataset.ti));
   });
 
-  hdr.querySelector('.bts-close-x').addEventListener('click', () => ov.remove());
-  const escM = e => { if (e.key === 'Escape') { ov.remove(); document.removeEventListener('keydown', escM); } };
+  hdr.querySelector('.bts-close-x').addEventListener('click', () => { ov.remove(); returnToStart(); });
+  const escM = e => { if (e.key === 'Escape') { ov.remove(); document.removeEventListener('keydown', escM); returnToStart(); } };
   document.addEventListener('keydown', escM);
 
   // ── tab 0 handlers ──
   const csvBtn = document.getElementById('ms-csv-btn');
-  if (csvBtn && hasData) csvBtn.addEventListener('click', () => { downloadSessionCSV(); ov.remove(); });
+  if (csvBtn && hasData) csvBtn.addEventListener('click', () => { downloadSessionCSV(); });
 
   // ── tab 2 handlers — topic checkboxes ──
   // Use event delegation on p2 so we don't need to query each checkbox individually
@@ -7703,7 +7760,6 @@ function showStudentPanel(startTab) {
       document.getElementById('mx-warn').style.display = 'block'; return;
     }
     document.getElementById('mx-warn').style.display = 'none';
-    ov.remove();
     buildAndShowHQMatrix(selected);
   });
 }
