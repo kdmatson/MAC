@@ -13,7 +13,7 @@
 <meta name="author" content="Kevin D. Matson">
 <meta name="description" content="MAD MACs is a vintage-style educational arcade game featuring quiz elements and animated interludes that link to background sources.">
 <meta name="license" content="CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0/">
-<meta name="version" content="MADMACs v2.14 — session 4 complete: panel nav, downloads, interlude preview; audit clean 20260321">
+<meta name="version" content="MADMACs v2.15 — interlude shuffle-deck (no repeats until all 11 seen); mirrors question bank logic 20260321">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;600&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -2288,16 +2288,35 @@ function triggerBarUpdates(){
   scaleGame();
 }
 
+// Interlude shuffle deck — mirrors buildShuffledDeck() for questions.
+// Cycles through all active interludes in shuffled order before any repeats.
+let ilDeck = [];
+let ilDeckPos = 0;
+
+function _buildIlDeck(){
+  const active = IL_BANK.map((_,i)=>i).filter(i=>interludeIsActive(IL_BANK[i]));
+  const pool = active.length ? active : IL_BANK.map((_,i)=>i);
+  for(let i=pool.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [pool[i],pool[j]]=[pool[j],pool[i]];
+  }
+  return pool;
+}
+
 function showInterlude(onDone){
   ilInit();
   ilOnDone=onDone;
-  // Build pool of active entry indices (topic + entry enabled flags both respected)
-  const active = IL_BANK.map((_,i)=>i).filter(i=>interludeIsActive(IL_BANK[i]));
-  // Fallback: if everything is disabled, use the full bank
-  const pool = active.length ? active : IL_BANK.map((_,i)=>i);
-  // Pick randomly, avoid immediate repeat
-  let idx;
-  do { idx=pool[Math.floor(Math.random()*pool.length)]; } while(idx===ilLastIdx && pool.length>1);
+  // Shuffle-deck pick: cycle through all active interludes before repeating.
+  // On deck exhaustion, rebuild and guard against immediate repeat at seam.
+  if(ilDeckPos >= ilDeck.length){
+    const lastIdx = ilDeck.length ? ilDeck[ilDeck.length-1] : -1;
+    ilDeck = _buildIlDeck();
+    ilDeckPos = 0;
+    if(ilDeck.length > 1 && ilDeck[0] === lastIdx){
+      [ilDeck[0],ilDeck[1]]=[ilDeck[1],ilDeck[0]];
+    }
+  }
+  const idx = ilDeck[ilDeckPos++];
   ilLastIdx=idx;
   ilCurrentIdx=idx;
 
